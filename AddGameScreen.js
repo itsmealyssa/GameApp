@@ -1,4 +1,4 @@
-// AddGameScreen.js
+// AddGameScreen.js ine dinhi kun diin makikita sa game screen
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { styles } from './globalStyles';
