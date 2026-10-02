@@ -61,6 +61,8 @@ function MainTabs({ games }) {
   );
 }
 
+// Root component that manages the game data and application navigation
+
 export default function App() {
   const [games, setGames] = useState(initialGames);
 
