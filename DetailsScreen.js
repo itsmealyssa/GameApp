@@ -26,6 +26,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
     setGames(games.map((item) => (item.id === gameId ? { ...item, ...changes } : item)));
   };
 
+  // Remove the selected game and return to the collection
   const removeGame = () => {
     setGames(games.filter((item) => item.id !== gameId));
     navigation.goBack();
