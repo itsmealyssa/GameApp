@@ -25,6 +25,8 @@ export default function BacklogScreen({ navigation, games }) {
         <FlatList
           data={backlogGames}
           keyExtractor={(game) => game.id}
+
+       // Render each backlog game as a selectable card
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
