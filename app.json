@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GameTracker",
-    "slug": "GameTracker",
+    "name": "GameVault",
+    "slug": "GameVault",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
