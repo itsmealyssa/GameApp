@@ -1,5 +1,4 @@
 // AddGameScreen.js
-// A simple form to log a new owned game.
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { styles } from './globalStyles';
@@ -15,22 +14,19 @@ export default function AddGameScreen({ navigation, games, setGames }) {
   const ratingNumbers = [1, 2, 3, 4, 5];
 
   const handleSave = () => {
-    // Conditional: don't save without a title
     if (title === '') {
       setErrorMessage('Please enter a game title.');
       return;
     }
 
-    // Object literal for the new game
     const newGame = {
-      id: Date.now().toString(), // unique id based on the current time
+      id: Date.now().toString(),
       title: title,
       platform: platform === '' ? 'Unknown' : platform,
       status: status,
       rating: rating,
     };
 
-    // Spread: copy the old list and add the new game at the end
     setGames([...games, newGame]);
     navigation.goBack();
   };
@@ -41,7 +37,7 @@ export default function AddGameScreen({ navigation, games, setGames }) {
       <TextInput
         style={styles.input}
         placeholder="e.g. Minecraft"
-        placeholderTextColor="#6C7086"
+        placeholderTextColor="#64748b"
         value={title}
         onChangeText={(text) => setTitle(text)}
       />
@@ -50,7 +46,7 @@ export default function AddGameScreen({ navigation, games, setGames }) {
       <TextInput
         style={styles.input}
         placeholder="e.g. PC, PS5, Switch"
-        placeholderTextColor="#6C7086"
+        placeholderTextColor="#64748b"
         value={platform}
         onChangeText={(text) => setPlatform(text)}
       />
@@ -63,7 +59,9 @@ export default function AddGameScreen({ navigation, games, setGames }) {
             style={[styles.chip, status === option ? styles.chipActive : null]}
             onPress={() => setStatus(option)}
           >
-            <Text style={styles.chipText}>{option}</Text>
+            <Text style={status === option ? styles.chipTextActive : styles.chipText}>
+              {option}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>

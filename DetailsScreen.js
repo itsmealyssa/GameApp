@@ -1,18 +1,13 @@
 // DetailsScreen.js
-// Shows one game. Lets the user rate it, change its status, or remove it.
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { styles } from './globalStyles';
 import { statusOptions, getStatusColor } from './data';
 
 export default function DetailsScreen({ route, navigation, games, setGames }) {
-  // Receive the id sent from HomeScreen
   const { gameId } = route.params;
-
-  // .filter() returns an array, so we take the first (and only) match
   const game = games.filter((item) => item.id === gameId)[0];
 
-  // Safety check in case the game was removed
   if (!game) {
     return (
       <View style={styles.container}>
@@ -23,7 +18,6 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
 
   const ratingNumbers = [1, 2, 3, 4, 5];
 
-  // .map() + spread: copy the list, changing only this game
   const updateGame = (changes) => {
     setGames(games.map((item) => (item.id === gameId ? { ...item, ...changes } : item)));
   };
@@ -42,6 +36,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
           <Text style={{ fontSize: 48 }}>🎮</Text>
         </View>
       )}
+
       <Text style={styles.title}>{game.title}</Text>
       <Text style={styles.subText}>Platform: {game.platform}</Text>
 
@@ -69,7 +64,9 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
             style={[styles.chip, game.status === option ? styles.chipActive : null]}
             onPress={() => updateGame({ status: option })}
           >
-            <Text style={styles.chipText}>{option}</Text>
+            <Text style={game.status === option ? styles.chipTextActive : styles.chipText}>
+              {option}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
