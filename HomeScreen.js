@@ -9,6 +9,7 @@ export default function HomeScreen({ navigation, games }) {
 
   const filterOptions = ['All', ...statusOptions];
 
+  // Calculate the number of games in each progress category
   const backlogCount = games.filter((game) => game.status === 'Backlog').length;
   const playingCount = games.filter((game) => game.status === 'Playing').length;
   const completedCount = games.filter((game) => game.status === 'Completed').length;
