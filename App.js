@@ -12,7 +12,7 @@ import StoresScreen from './StoresScreen';
 import AddGameScreen from './AddGameScreen';
 import DetailsScreen from './DetailsScreen';
 import { initialGames } from './data';
-
+// Navigation stacks and bottom tabs
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
