@@ -5,6 +5,8 @@ import { styles } from './globalStyles';
 import { getStatusColor, getStars } from './data';
 
 export default function BacklogScreen({ navigation, games }) {
+
+  // Get only the games that are currently marked as backlog
   const backlogGames = games.filter((game) => game.status === 'Backlog');
 
   return (
