@@ -21,6 +21,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
   // Available rating values from one to five stars
   const ratingNumbers = [1, 2, 3, 4, 5];
 
+  // Update the selected game's information while keeping the other data
   const updateGame = (changes) => {
     setGames(games.map((item) => (item.id === gameId ? { ...item, ...changes } : item)));
   };
