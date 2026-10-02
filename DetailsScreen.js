@@ -18,7 +18,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
       </View>
     );
   }
-
+  // Available rating values from one to five stars
   const ratingNumbers = [1, 2, 3, 4, 5];
 
   const updateGame = (changes) => {
