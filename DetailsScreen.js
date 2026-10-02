@@ -5,6 +5,8 @@ import { styles } from './globalStyles';
 import { statusOptions, getStatusColor } from './data';
 
 export default function DetailsScreen({ route, navigation, games, setGames }) {
+
+  // Retrieve the selected game using the ID passed from the collection screen
   const { gameId } = route.params;
   const game = games.filter((item) => item.id === gameId)[0];
 
