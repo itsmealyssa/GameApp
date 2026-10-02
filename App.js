@@ -16,6 +16,7 @@ import { initialGames } from './data';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Main navigation tabs for the game collection, backlog, statistics, and stores// Main navigation tabs for the game collection, backlog, statistics, and stores
 function MainTabs({ games }) {
   return (
     <Tab.Navigator
