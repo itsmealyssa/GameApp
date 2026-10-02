@@ -13,6 +13,7 @@ export default function HomeScreen({ navigation, games }) {
   const playingCount = games.filter((game) => game.status === 'Playing').length;
   const completedCount = games.filter((game) => game.status === 'Completed').length;
 
+  // Filter the collection based on the selected game status
   let shownGames = games;
   if (filter !== 'All') {
     shownGames = games.filter((game) => game.status === filter);
