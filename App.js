@@ -47,7 +47,7 @@ function MainTabs({ games }) {
         },
       })}
     >
-      <Tab.Screen name="Game Collection">
+      <Tab.Screen name="Collection">
         {(props) => <HomeScreen {...props} games={games} />}
       </Tab.Screen>
       <Tab.Screen name="Backlog">
