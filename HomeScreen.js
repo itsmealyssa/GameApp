@@ -9,12 +9,12 @@ export default function HomeScreen({ navigation, games }) {
 
   const filterOptions = ['All', ...statusOptions];
 
-  // Calculate the number of games in each progress category
+  // Sa pag calculate in san Game 
   const backlogCount = games.filter((game) => game.status === 'Backlog').length;
   const playingCount = games.filter((game) => game.status === 'Playing').length;
   const completedCount = games.filter((game) => game.status === 'Completed').length;
 
-  // Filter the collection based on the selected game status
+  // Filter ine base sa game status
   let shownGames = games;
   if (filter !== 'All') {
     shownGames = games.filter((game) => game.status === filter);
