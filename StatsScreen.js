@@ -9,7 +9,7 @@ export default function StatsScreen({ games }) {
   const completedCount = games.filter(g => g.status === 'Completed').length;
   const playingCount = games.filter(g => g.status === 'Playing').length;
   
-  // Conditional calculation for completion rate percentage
+  // ine na line asya ine an Conditional calculation for completion rate percentage
   const completionRate = ownedCount > 0 ? Math.round((completedCount / ownedCount) * 100) : 0;
   const totalHours = calculateTotalHours(games);
 
