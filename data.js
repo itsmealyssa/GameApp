@@ -17,7 +17,7 @@ export function getStatusColor(status) {
     return '#F38BA8';
   }
 }
-
+//ine
 export function getStars(rating) {
   let stars = '';
   for (let i = 1; i <= 5; i++) {
@@ -29,6 +29,8 @@ export function getStars(rating) {
   }
   return stars;
 }
+// abot ddi asya ine an sa pag rate san uyag
+
 
 // ine naman an loop san uyag kun pera na ka oras para uyag
 export function calculateTotalHours(gamesList) {
