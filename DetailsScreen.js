@@ -6,7 +6,7 @@ import { statusOptions, getStatusColor } from './data';
 
 export default function DetailsScreen({ route, navigation, games, setGames }) {
 
-  // Retrieve the selected game using the ID passed from the collection screen
+  // ine naman asya ine an pag Retrieve the selected game using the ID passed from the collection screen
   const { gameId } = route.params;
   const game = games.filter((item) => item.id === gameId)[0];
 
@@ -18,7 +18,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
       </View>
     );
   }
-  // Available rating values from one to five stars
+  // ine naman asya ine  Available rating values from one to five stars
   const ratingNumbers = [1, 2, 3, 4, 5];
 
   // Update the selected game's information while keeping the other data
@@ -26,7 +26,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
     setGames(games.map((item) => (item.id === gameId ? { ...item, ...changes } : item)));
   };
 
-  // Remove the selected game and return to the collection
+  // ine naman an pag Remove the selected game and return to the collection
   const removeGame = () => {
     setGames(games.filter((item) => item.id !== gameId));
     navigation.goBack();
