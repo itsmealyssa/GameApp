@@ -1,4 +1,4 @@
-// DetailsScreen.js or Game Details
+// Asya ine an about sa game details 
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { styles } from './globalStyles';
