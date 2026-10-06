@@ -10,7 +10,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
   const { gameId } = route.params;
   const game = games.filter((item) => item.id === gameId)[0];
 
- // Display a message if the selected game cannot be found
+ // ddi asya ine an code kun diin dire makita an uyag
   if (!game) {
     return (
       <View style={styles.container}>
