@@ -1,4 +1,4 @@
-// HomeScreen.js
+// Ine an about sa Game HomeScreen
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
 import { styles } from './globalStyles';
