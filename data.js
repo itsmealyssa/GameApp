@@ -1,4 +1,4 @@
-// data.js
+// ine an about sa game kun diin makikita an data san uyag
 export const initialGames = [
   { id: '1', title: 'Cyberpunk 2077', platform: 'PC', status: 'Completed', rating: 5, hours: 65, image: require('./assets/covers/cyberpunk2077.jpg') },
   { id: '2', title: 'Battlefield 6', platform: 'PS5', status: 'Playing', rating: 4, hours: 45, image: require('./assets/covers/battlefield6.jpg') },
@@ -30,7 +30,7 @@ export function getStars(rating) {
   return stars;
 }
 
-// Loop to calculate total gaming hours
+// ine naman an loop san uyag kun pera na ka oras para uyag
 export function calculateTotalHours(gamesList) {
   let total = 0;
   for (let i = 0; i < gamesList.length; i++) {
