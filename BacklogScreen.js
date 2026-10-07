@@ -36,8 +36,6 @@ export default function BacklogScreen({ navigation, games }) {
                 <Image source={item.image} style={styles.cover} />
               ) : (
                 <View style={[styles.cover, styles.coverPlaceholder]}>
-
-                //if no image available
                   <Text style={{ fontSize: 20 }}>🎮</Text>
                 </View>
               )}
