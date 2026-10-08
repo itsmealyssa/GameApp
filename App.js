@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
+// Import all screens used in the GameVault app
 import HomeScreen from './HomeScreen';
 import BacklogScreen from './BacklogScreen';
 import StatsScreen from './StatsScreen';
@@ -12,6 +13,7 @@ import StoresScreen from './StoresScreen';
 import AddGameScreen from './AddGameScreen';
 import DetailsScreen from './DetailsScreen';
 import { initialGames } from './data';
+
 // Navigation stacks and bottom tabs
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -30,6 +32,7 @@ function MainTabs({ games }) {
         },
         tabBarActiveTintColor: '#1683ff',
         tabBarInactiveTintColor: '#64748b',
+         // Set an icon for each tab
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
@@ -50,6 +53,7 @@ function MainTabs({ games }) {
       <Tab.Screen name="Collection">
         {(props) => <HomeScreen {...props} games={games} />}
       </Tab.Screen>
+      // Backlog tab displays games that still need to be played 
       <Tab.Screen name="Backlog">
         {(props) => <BacklogScreen {...props} games={games} />}
       </Tab.Screen>
