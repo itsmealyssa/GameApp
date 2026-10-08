@@ -8,37 +8,43 @@ export const styles = StyleSheet.create({
     backgroundColor: '#060a11',
     padding: 16,
   },
+// Primary header text styling
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 4,
   },
+// Standard body text styling
   text: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
   },
+// Smaller, muted text for secondary details (like platforms or hints)
   subText: {
     fontSize: 12,
     color: '#64748b',
     marginTop: 2,
   },
+// Text styling for form input labels
   label: {
     fontSize: 13,
     color: '#64748b',
     marginTop: 16,
     marginBottom: 6,
   },
+// Flexbox layout to align items horizontally and wrap to the next line if space runs out
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  // Branding Header style
+// Branding Header style
   headerBrand: {
     marginBottom: 12,
   },
+
   brandTitle: {
     fontSize: 20,
     fontWeight: '900',
