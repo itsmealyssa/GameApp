@@ -1,7 +1,7 @@
 // globalStyles.js
 // Shared StyleSheet using only core Flexbox layout rules and theme colors.
 import { StyleSheet } from 'react-native';
-
+// Main screen wrapper using flex: 1 to take up the entire available screen height
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
