@@ -57,6 +57,7 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
           </TouchableOpacity>
         ))}
       </View>
+      // Ipinapakita kon may rating na an game o wara pa       
       <Text style={styles.subText}>
         {game.rating === 0 ? 'Not rated yet' : `You rated this ${game.rating}/5`}
       </Text>
@@ -75,11 +76,12 @@ export default function DetailsScreen({ route, navigation, games, setGames }) {
           </TouchableOpacity>
         ))}
       </View>
-
+     // Button para tanggalon an game sa collection.
       <TouchableOpacity style={[styles.button, styles.dangerButton]} onPress={removeGame}>
         <Text style={styles.buttonText}>Remove from Collection</Text>
       </TouchableOpacity>
-
+        
+    // Button para bumalik sa Collection Screen.
       <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
         <Text style={styles.buttonText}>Back to Collection</Text>
       </TouchableOpacity>
