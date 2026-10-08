@@ -14,11 +14,11 @@ export default function AddGameScreen({ navigation, games, setGames }) {
   const ratingNumbers = [1, 2, 3, 4, 5];
 
   const handleSave = () => {
-    if (title === '') {
+    if (title === '') {      // Prevents saving if the game title is empty
       setErrorMessage('Please enter a game title.');
       return;
     }
-
+// Creates a new game object using the user's input
     const newGame = {
       id: Date.now().toString(),
       title: title,
@@ -26,7 +26,9 @@ export default function AddGameScreen({ navigation, games, setGames }) {
       status: status,
       rating: rating,
     };
-
+    // Adds the new game to the existing games array
+    // This is the important line that makes the new game available
+    // to the Game/Collection screen
     setGames([...games, newGame]);
     navigation.goBack();
   };
@@ -41,7 +43,7 @@ export default function AddGameScreen({ navigation, games, setGames }) {
         value={title}
         onChangeText={(text) => setTitle(text)}
       />
-
+  // Game title input
       <Text style={styles.label}>Platform</Text>
       <TextInput
         style={styles.input}
