@@ -19,7 +19,7 @@ export default function HomeScreen({ navigation, games }) {
   if (filter !== 'All') {
     shownGames = games.filter((game) => game.status === filter);
   }
-
+// Ine nga return mao an actual nga UI nga ipapakita sa HomeScreen
   return (
     <View style={styles.container}>
       {/* GameVault Header Branding */}
