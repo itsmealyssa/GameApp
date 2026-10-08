@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { styles } from './globalStyles';
 
+// Stores the connection status of each game store
 export default function StoresScreen() {
   const [connectedStores, setConnectedStores] = useState({
     Steam: false,
@@ -10,14 +11,14 @@ export default function StoresScreen() {
     Xbox: false,
     Nintendo: false,
   });
-
+// Toggles a store between connected and disconnected
   const toggleConnect = (store) => {
     setConnectedStores((previousStores) => ({
       ...previousStores,
       [store]: !previousStores[store],
     }));
   };
-
+// List of available game stores
   const stores = ['Steam', 'Epic', 'PlayStation', 'Xbox', 'Nintendo'];
 
   return (
