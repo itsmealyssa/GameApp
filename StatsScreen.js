@@ -24,6 +24,8 @@ export default function StatsScreen({ games }) {
       <Text style={styles.subText}>Your gaming journey</Text>
 
       <View style={{ marginTop: 16, gap: 10 }}>
+  
+      // Ipinapakita an total nga games nga aada sa collection
         <View style={styles.card}><View style={styles.cardInfo}>
           <Text style={styles.statNumber}>{ownedCount}</Text>
           <Text style={styles.subText}>Games owned</Text>
@@ -33,7 +35,8 @@ export default function StatsScreen({ games }) {
           <Text style={styles.statNumber}>{completedCount}/{ownedCount}</Text>
           <Text style={styles.subText}>Story completed</Text>
         </View></View>
-
+  
+     // Ipinapakita an completion percentage san games 
         <View style={styles.card}><View style={styles.cardInfo}>
           <Text style={styles.statNumber}>{completionRate}%</Text>
           <Text style={styles.subText}>Completion rate</Text>
@@ -43,7 +46,8 @@ export default function StatsScreen({ games }) {
           <Text style={styles.statNumber}>{totalHours}</Text>
           <Text style={styles.subText}>Total gaming hours</Text>
         </View></View>
-
+  
+       // makikita kon pira nga games an gin uuyag yana
         <View style={styles.card}><View style={styles.cardInfo}>
           <Text style={styles.statNumber}>{playingCount}</Text>
           <Text style={styles.subText}>Currently playing</Text>
