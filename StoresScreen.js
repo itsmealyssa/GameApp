@@ -4,6 +4,7 @@ import { styles } from './globalStyles';
 
 // Stores the connection status of each game store
 export default function StoresScreen() {
+  // Initializes the connection status of all game stores as false
   const [connectedStores, setConnectedStores] = useState({
     Steam: false,
     Epic: false,
@@ -22,6 +23,7 @@ export default function StoresScreen() {
   const stores = ['Steam', 'Epic', 'PlayStation', 'Xbox', 'Nintendo'];
 
   return (
+    // Main container of the Game Stores screen
     <View style={styles.container}>
 
       <View style={styles.headerBrand}>
