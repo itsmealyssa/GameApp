@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "GameVault",
-    "slug": "GameVault",
+    "name": "GameVault",   // Name displayed for the app
+    "slug": "GameVault",   // Unique project identifier
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.png",   // Path to the app icon
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true    // Allows the app to support iPad devices
     },
     "android": {
       "adaptiveIcon": {
