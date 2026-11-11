@@ -25,7 +25,7 @@ export default function StatsScreen({ games }) {
 
       <View style={{ marginTop: 16, gap: 10 }}>
   
-      // Ipinapakita an total nga games nga aada sa collection
+       // Displays the total number of games in the collection. 
         <View style={styles.card}><View style={styles.cardInfo}>
           <Text style={styles.statNumber}>{ownedCount}</Text>
           <Text style={styles.subText}>Games owned</Text>
@@ -47,7 +47,7 @@ export default function StatsScreen({ games }) {
           <Text style={styles.subText}>Total gaming hours</Text>
         </View></View>
   
-       // makikita kon pira nga games an gin uuyag yana
+       // Displays the number of games currently being played.
         <View style={styles.card}><View style={styles.cardInfo}>
           <Text style={styles.statNumber}>{playingCount}</Text>
           <Text style={styles.subText}>Currently playing</Text>
