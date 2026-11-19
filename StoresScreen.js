@@ -151,99 +151,111 @@ export default function StoresScreen({ navigation, games = [] }) {
                 },
               ]}
             >
-              {/* STORE LIBRARY BUTTON */}
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel={`Open ${store.name} library`}
-                activeOpacity={0.8}
-                onPress={() => openStoreLibrary(store)}
+              {/* STORE ICON */}
+              <View
                 style={{
-                  flex: 1,
-                  flexDirection: 'row',
+                  width: 52,
+                  height: 52,
+                  borderRadius: 14,
+                  backgroundColor: '#182338',
+                  justifyContent: 'center',
                   alignItems: 'center',
+                  marginRight: 12,
+                  borderWidth: 1,
+                  borderColor: '#26344c',
                 }}
               >
-                <View
+                <Text
                   style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 14,
-                    backgroundColor: '#182338',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginRight: 12,
-                    borderWidth: 1,
-                    borderColor: '#26344c',
+                    color: details.color,
+                    fontSize: 25,
+                    fontWeight: '900',
                   }}
                 >
-                  <Text
-                    style={{
-                      color: details.color,
-                      fontSize: 25,
-                      fontWeight: '900',
-                    }}
-                  >
-                    {details.icon}
-                  </Text>
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.text}>
-                    {store.name}
-                  </Text>
-
-                  <Text style={styles.subText}>
-                    {details.subtitle}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.helperText,
-                      { marginTop: 5 },
-                    ]}
-                  >
-                    {details.description}
-                  </Text>
-
-                  <Text
-                    style={{
-                      color: '#1683ff',
-                      fontSize: 13,
-                      fontWeight: '800',
-                      marginTop: 9,
-                    }}
-                  >
-                    {count} {count === 1 ? 'GAME' : 'GAMES'} IN LIBRARY
-                  </Text>
-
-                  <Text
-                    style={{
-                      color: '#64748b',
-                      fontSize: 11,
-                      marginTop: 7,
-                    }}
-                  >
-                    Tap to view library →
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* VISIT STORE BUTTON */}
-              <TouchableOpacity
-                accessibilityRole="button"
-                style={[
-                  styles.smallButton,
-                  {
-                    marginLeft: 8,
-                    paddingHorizontal: 10,
-                  },
-                ]}
-                onPress={() => openStore(details.url)}
-              >
-                <Text style={styles.buttonText}>
-                  Visit ↗
+                  {details.icon}
                 </Text>
-              </TouchableOpacity>
+              </View>
+
+              {/* STORE INFORMATION */}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.text}>
+                  {store.name}
+                </Text>
+
+                <Text style={styles.subText}>
+                  {details.subtitle}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.helperText,
+                    { marginTop: 5 },
+                  ]}
+                >
+                  {details.description}
+                </Text>
+
+                <Text
+                  style={{
+                    color: '#1683ff',
+                    fontSize: 13,
+                    fontWeight: '800',
+                    marginTop: 9,
+                  }}
+                >
+                  {count} {count === 1 ? 'GAME' : 'GAMES'} IN LIBRARY
+                </Text>
+
+                {/* ACTION BUTTONS */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    marginTop: 12,
+                    gap: 8,
+                  }}
+                >
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={`View ${store.name} library`}
+                    activeOpacity={0.8}
+                    style={[
+                      styles.smallButton,
+                      {
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                      },
+                    ]}
+                    onPress={() => openStoreLibrary(store)}
+                  >
+                    <Text style={styles.buttonText}>
+                      View Library →
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={`Visit ${store.name} website`}
+                    activeOpacity={0.8}
+                    style={[
+                      styles.secondaryButton,
+                      {
+                        paddingHorizontal: 14,
+                        paddingVertical: 10,
+                        borderRadius: 9,
+                        borderWidth: 1,
+                        borderColor: '#26344c',
+                      },
+                    ]}
+                    onPress={() => openStore(details.url)}
+                  >
+                    <Text style={styles.buttonText}>
+                      Visit Store ↗
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           );
         })}
