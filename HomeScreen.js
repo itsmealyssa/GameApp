@@ -4,7 +4,6 @@ import {
   FlatList,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -29,11 +28,9 @@ export default function HomeScreen({
 }) {
   const [filter, setFilter] = useState('All');
   const [storeFilter, setStoreFilter] = useState('All');
-  const [query, setQuery] = useState('');
   const [showStoreFilters, setShowStoreFilters] = useState(false);
 
   const stats = getCollectionStats(games);
-  const normalizedQuery = query.trim().toLowerCase();
 
   const storeFilters = [
     { id: 'All', name: 'All Stores' },
@@ -56,13 +53,7 @@ export default function HomeScreen({
           ? !game.storeId
           : game.storeId === storeFilter;
 
-    const matchesSearch =
-      !normalizedQuery ||
-      game.title.toLowerCase().includes(normalizedQuery) ||
-      game.platform.toLowerCase().includes(normalizedQuery) ||
-      getStoreName(game.storeId).toLowerCase().includes(normalizedQuery);
-
-    return matchesStatus && matchesStore && matchesSearch;
+    return matchesStatus && matchesStore;
   });
 
   return (
@@ -80,7 +71,7 @@ export default function HomeScreen({
       <Text style={styles.title}>My Games</Text>
 
       <Text style={styles.subText}>
-        {stats.total} owned · {stats.completed} completed · {Number(stats.totalHours.toFixed(1))} hours
+        {stats.total} owned · {stats.completed} completed · {stats.totalHours} hours
       </Text>
 
       {/* STORAGE ERROR */}
@@ -104,6 +95,7 @@ export default function HomeScreen({
             <Text style={styles.statNumber}>
               {item.value}
             </Text>
+
             <Text style={styles.subText}>
               {item.label}
             </Text>
@@ -111,30 +103,11 @@ export default function HomeScreen({
         ))}
       </View>
 
-      {/* SEARCH BAR */}
-      <TextInput
-        accessibilityLabel="Search your collection"
-        autoCapitalize="none"
-        placeholder="Search title, platform or store"
-        placeholderTextColor="#64748b"
-        style={[
-          styles.input,
-          styles.searchInput,
-          {
-            marginTop: 12,
-            marginBottom: 8,
-            minHeight: 52,
-          },
-        ]}
-        value={query}
-        onChangeText={setQuery}
-      />
-
       {/* STATUS FILTERS */}
       <Text
         style={[
           styles.label,
-          { marginTop: 6, marginBottom: 4 },
+          { marginTop: 8, marginBottom: 4 },
         ]}
       >
         Filter by Status
@@ -159,7 +132,10 @@ export default function HomeScreen({
             style={[
               styles.chip,
               filter === option ? styles.chipActive : null,
-              { paddingVertical: 7, paddingHorizontal: 12 },
+              {
+                paddingVertical: 7,
+                paddingHorizontal: 12,
+              },
             ]}
             onPress={() => setFilter(option)}
           >
@@ -182,7 +158,9 @@ export default function HomeScreen({
         accessibilityState={{
           expanded: showStoreFilters,
         }}
-        onPress={() => setShowStoreFilters(!showStoreFilters)}
+        onPress={() =>
+          setShowStoreFilters(!showStoreFilters)
+        }
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
