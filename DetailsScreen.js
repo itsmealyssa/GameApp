@@ -5,6 +5,7 @@ import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { styles } from './globalStyles';
 import {
   statusOptions,
+  storeOptions,
   getStatusColor,
   getStoreName,
 } from './data';
@@ -33,6 +34,10 @@ export default function DetailsScreen({
   const ratingNumbers = [1, 2, 3, 4, 5];
 
   const storeName = getStoreName(game.storeId);
+
+  const changeStore = (storeId) => {
+    onUpdateGame(gameId, { storeId });
+  };
 
   const removeGame = () =>
     Alert.alert(
@@ -65,7 +70,7 @@ export default function DetailsScreen({
       </Text>
 
       <Text style={styles.subText}>
-        Store: {storeName || 'Unassigned'}
+        Store: {storeName}
       </Text>
 
       <Text style={styles.subText}>
@@ -85,6 +90,58 @@ export default function DetailsScreen({
         <Text style={styles.badgeText}>
           {game.status}
         </Text>
+      </View>
+
+      {/* CHANGE GAME STORE */}
+      <Text style={styles.label}>Change Store</Text>
+
+      <View style={styles.row}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityState={{ selected: !game.storeId }}
+          style={[
+            styles.chip,
+            !game.storeId ? styles.chipActive : null,
+          ]}
+          onPress={() => changeStore(null)}
+        >
+          <Text
+            style={
+              !game.storeId
+                ? styles.chipTextActive
+                : styles.chipText
+            }
+          >
+            Unassigned
+          </Text>
+        </TouchableOpacity>
+
+        {storeOptions.map((store) => (
+          <TouchableOpacity
+            key={store.id}
+            accessibilityRole="button"
+            accessibilityState={{
+              selected: game.storeId === store.id,
+            }}
+            style={[
+              styles.chip,
+              game.storeId === store.id
+                ? styles.chipActive
+                : null,
+            ]}
+            onPress={() => changeStore(store.id)}
+          >
+            <Text
+              style={
+                game.storeId === store.id
+                  ? styles.chipTextActive
+                  : styles.chipText
+              }
+            >
+              {store.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <Text style={styles.label}>Your Rating</Text>
