@@ -1,10 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'react-native';
+
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -16,13 +19,17 @@ import StatsScreen from './StatsScreen';
 import StoresScreen from './StoresScreen';
 import AddGameScreen from './AddGameScreen';
 import DetailsScreen from './DetailsScreen';
+import GameSearchScreen from './GameSearchScreen';
+
 import { initialGames } from './data';
+import { loadGames, saveGames } from './gameStorage';
+import { styles } from './globalStyles';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Main navigation tabs
-function MainTabs({ games }) {
+function MainTabs({ games, storageError }) {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: '#060a11' }}
@@ -31,14 +38,17 @@ function MainTabs({ games }) {
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
+
           tabBarStyle: {
             backgroundColor: '#0c1320',
             borderTopColor: '#182338',
             height: 60,
             paddingBottom: 8,
           },
+
           tabBarActiveTintColor: '#1683ff',
           tabBarInactiveTintColor: '#64748b',
+
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
@@ -49,7 +59,9 @@ function MainTabs({ games }) {
             } else if (route.name === 'Stats') {
               iconName = focused ? 'bar-chart' : 'bar-chart-outline';
             } else if (route.name === 'Stores') {
-              iconName = focused ? 'cloud-upload' : 'cloud-upload-outline';
+              iconName = focused
+                ? 'cloud-upload'
+                : 'cloud-upload-outline';
             }
 
             return (
@@ -63,18 +75,37 @@ function MainTabs({ games }) {
         })}
       >
         <Tab.Screen name="Collection">
-          {(props) => <HomeScreen {...props} games={games} />}
+          {(props) => (
+            <HomeScreen
+              {...props}
+              games={games}
+              storageError={storageError}
+            />
+          )}
         </Tab.Screen>
 
         <Tab.Screen name="Backlog">
-          {(props) => <BacklogScreen {...props} games={games} />}
+          {(props) => (
+            <BacklogScreen
+              {...props}
+              games={games}
+            />
+          )}
         </Tab.Screen>
 
         <Tab.Screen name="Stats">
-          {(props) => <StatsScreen {...props} games={games} />}
+          {(props) => (
+            <StatsScreen
+              {...props}
+              games={games}
+            />
+          )}
         </Tab.Screen>
 
-        <Tab.Screen name="Stores" component={StoresScreen} />
+        <Tab.Screen
+          name="Stores"
+          component={StoresScreen}
+        />
       </Tab.Navigator>
     </SafeAreaView>
   );
@@ -82,57 +113,184 @@ function MainTabs({ games }) {
 
 // Root component
 export default function App() {
-  const [games, setGames] = useState(initialGames);
+  const [games, setGames] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [persistEnabled, setPersistEnabled] = useState(true);
+  const [storageError, setStorageError] = useState('');
+
+  // Load saved games
+  useEffect(() => {
+    let isActive = true;
+
+    loadGames()
+      .then((savedGames) => {
+        if (isActive) {
+          setGames(savedGames);
+        }
+      })
+      .catch((error) => {
+        if (!isActive) return;
+
+        setGames(initialGames);
+        setPersistEnabled(false);
+
+        setStorageError(
+          `${error.message} Your sample collection is available for this session.`
+        );
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  // Save games whenever the collection changes
+  useEffect(() => {
+    if (isLoading || !persistEnabled) return;
+
+    saveGames(games).catch(() => {
+      setStorageError(
+        'Could not save changes on this device. Your current session is still available.'
+      );
+    });
+  }, [games, isLoading, persistEnabled]);
+
+  // Add or replace a game
+  const saveGame = useCallback((game) => {
+    setStorageError('');
+    setPersistEnabled(true);
+
+    setGames((currentGames) => {
+      const alreadyExists = currentGames.some(
+        (item) => item.id === game.id
+      );
+
+      return alreadyExists
+        ? currentGames.map((item) =>
+            item.id === game.id ? game : item
+          )
+        : [...currentGames, game];
+    });
+  }, []);
+
+  // Update game details
+  const updateGame = useCallback((gameId, changes) => {
+    setStorageError('');
+    setPersistEnabled(true);
+
+    setGames((currentGames) =>
+      currentGames.map((game) =>
+        game.id === gameId
+          ? { ...game, ...changes }
+          : game
+      )
+    );
+  }, []);
+
+  // Remove a game
+  const removeGame = useCallback((gameId) => {
+    setStorageError('');
+    setPersistEnabled(true);
+
+    setGames((currentGames) =>
+      currentGames.filter((game) => game.id !== gameId)
+    );
+  }, []);
 
   return (
     <SafeAreaProvider>
+      {/* Android status bar */}
       <StatusBar
-        barStyle="light-content"
+        style="light"
         backgroundColor="#060a11"
         translucent={false}
       />
 
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerStyle: { backgroundColor: '#060a11' },
-            headerTintColor: '#FFFFFF',
-          }}
-        >
-          <Stack.Screen
-            name="MainTabs"
-            options={{ headerShown: false }}
-          >
-            {(props) => <MainTabs {...props} games={games} />}
-          </Stack.Screen>
+      {isLoading ? (
+        <View style={styles.loadingScreen}>
+          <ActivityIndicator
+            color="#1683ff"
+            size="large"
+          />
 
-          <Stack.Screen
-            name="AddGame"
-            options={{ title: 'Add a Game' }}
+          <Text style={[styles.subText, { marginTop: 12 }]}>
+            Loading your collection…
+          </Text>
+        </View>
+      ) : (
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: '#060a11',
+              },
+              headerTintColor: '#FFFFFF',
+              headerTitleStyle: {
+                fontWeight: '700',
+              },
+            }}
           >
-            {(props) => (
-              <AddGameScreen
-                {...props}
-                games={games}
-                setGames={setGames}
-              />
-            )}
-          </Stack.Screen>
+            {/* Main tabs */}
+            <Stack.Screen
+              name="MainTabs"
+              options={{ headerShown: false }}
+            >
+              {(props) => (
+                <MainTabs
+                  {...props}
+                  games={games}
+                  storageError={storageError}
+                />
+              )}
+            </Stack.Screen>
 
-          <Stack.Screen
-            name="Details"
-            options={{ title: 'Game Details' }}
-          >
-            {(props) => (
-              <DetailsScreen
-                {...props}
-                games={games}
-                setGames={setGames}
-              />
-            )}
-          </Stack.Screen>
-        </Stack.Navigator>
-      </NavigationContainer>
+            {/* Add game */}
+            <Stack.Screen
+              name="AddGame"
+              options={{ title: 'Add a Game' }}
+            >
+              {(props) => (
+                <AddGameScreen
+                  {...props}
+                  games={games}
+                  onSaveGame={saveGame}
+                />
+              )}
+            </Stack.Screen>
+
+            {/* Game details */}
+            <Stack.Screen
+              name="Details"
+              options={{ title: 'Game Details' }}
+            >
+              {(props) => (
+                <DetailsScreen
+                  {...props}
+                  games={games}
+                  onUpdateGame={updateGame}
+                  onRemoveGame={removeGame}
+                />
+              )}
+            </Stack.Screen>
+
+            {/* Online game search */}
+            <Stack.Screen
+              name="GameSearch"
+              options={{ title: 'Online Game Search' }}
+            >
+              {(props) => (
+                <GameSearchScreen {...props} />
+              )}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      )}
     </SafeAreaProvider>
   );
 }
+
