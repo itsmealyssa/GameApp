@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Linking,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   Alert,
@@ -11,6 +13,11 @@ import {
 
 import { styles } from './globalStyles';
 import { storeOptions, getStoreCounts } from './data';
+
+const STEAM_API_URL =
+  'https://gamevault-steam-api.gamevault-steam-api-kenen.workers.dev/steam/games';
+
+const DEFAULT_STEAM_ID = '76561199234531972';
 
 const storeDetails = {
   steam: {
@@ -50,7 +57,18 @@ const storeDetails = {
   },
 };
 
-export default function StoresScreen({ navigation, games = [] }) {
+export default function StoresScreen({
+  navigation,
+  games = [],
+  onImportSteamGames,
+}) {
+  const [steamId, setSteamId] = useState(DEFAULT_STEAM_ID);
+  const [steamGames, setSteamGames] = useState([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [connectedSteamId, setConnectedSteamId] = useState('');
+  const [steamMessage, setSteamMessage] = useState('');
+
   const storeCounts = getStoreCounts(games);
   const totalGames = games.length;
 
@@ -70,6 +88,111 @@ export default function StoresScreen({ navigation, games = [] }) {
       storeId: store.id,
       storeName: store.name,
     });
+  };
+
+  // Retrieve the public game library from the Cloudflare Worker.
+  const connectSteam = async () => {
+    const cleanSteamId = steamId.trim();
+
+    if (!/^\d{17}$/.test(cleanSteamId)) {
+      Alert.alert(
+        'Invalid Steam ID',
+        'Please enter a valid 17-digit Steam ID.'
+      );
+      return;
+    }
+
+    setIsConnecting(true);
+    setSteamGames([]);
+    setSteamMessage('');
+
+    try {
+      const response = await fetch(
+        `${STEAM_API_URL}?steamId=${encodeURIComponent(cleanSteamId)}`
+      );
+
+      let result;
+
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error('The Steam server returned an invalid response.');
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error || 'Unable to retrieve your Steam library.'
+        );
+      }
+
+      if (!Array.isArray(result.games)) {
+        throw new Error('Steam did not return a valid game list.');
+      }
+
+      setSteamGames(result.games);
+      setConnectedSteamId(cleanSteamId);
+
+      if (result.games.length === 0) {
+        setSteamMessage(
+          'No games were found in this Steam library.'
+        );
+      } else {
+        setSteamMessage(
+          `Successfully retrieved ${result.games.length} games. Review them below before importing.`
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Steam Connection Failed',
+        error.message ||
+          'Unable to connect to Steam. Please try again.'
+      );
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  // Import the previewed games into GameVault.
+  const importSteamLibrary = () => {
+    if (!steamGames.length) {
+      Alert.alert(
+        'No Games to Import',
+        'Connect a Steam account and retrieve its games first.'
+      );
+      return;
+    }
+
+    if (typeof onImportSteamGames !== 'function') {
+      Alert.alert(
+        'Import Unavailable',
+        'The Steam import handler is not available.'
+      );
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      const importedCount = onImportSteamGames(steamGames);
+
+      setSteamMessage(
+        `${importedCount} Steam games have been added or synced to GameVault.`
+      );
+
+      Alert.alert(
+        'Steam Library Imported',
+        `${importedCount} games have been added or updated in your GameVault collection.`
+      );
+
+      setSteamGames([]);
+    } catch (error) {
+      Alert.alert(
+        'Import Failed',
+        'GameVault could not import the Steam games. Please try again.'
+      );
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -129,11 +252,272 @@ export default function StoresScreen({ navigation, games = [] }) {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           paddingTop: 18,
           paddingBottom: 24,
         }}
       >
+        {/* STEAM CONNECTION */}
+        <View
+          style={[
+            styles.card,
+            {
+              padding: 16,
+              marginBottom: 18,
+              borderWidth: 1,
+              borderColor: '#263f58',
+            },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}
+          >
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 12,
+                backgroundColor: '#182c3d',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 12,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#66c0f4',
+                  fontSize: 22,
+                  fontWeight: '900',
+                }}
+              >
+                S
+              </Text>
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.text}>Connect Steam</Text>
+              <Text style={styles.subText}>
+                Import your public Steam game library
+              </Text>
+            </View>
+          </View>
+
+          <Text
+            style={[
+              styles.helperText,
+              { marginTop: 8, marginBottom: 10 },
+            ]}
+          >
+            Enter a 17-digit Steam ID. Each group member can use their own ID.
+          </Text>
+
+          <Text
+            style={{
+              color: '#aab8cc',
+              fontSize: 12,
+              fontWeight: '700',
+              marginBottom: 7,
+            }}
+          >
+            STEAM ID
+          </Text>
+
+          <TextInput
+            value={steamId}
+            onChangeText={setSteamId}
+            placeholder="Enter your 17-digit Steam ID"
+            placeholderTextColor="#64748b"
+            keyboardType="number-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={17}
+            style={{
+              backgroundColor: '#080f1b',
+              borderWidth: 1,
+              borderColor: '#26344c',
+              borderRadius: 10,
+              color: '#ffffff',
+              paddingHorizontal: 13,
+              paddingVertical: 12,
+              fontSize: 14,
+              marginBottom: 12,
+            }}
+          />
+
+          <TouchableOpacity
+            accessibilityRole="button"
+            activeOpacity={0.8}
+            disabled={isConnecting}
+            onPress={connectSteam}
+            style={[
+              styles.smallButton,
+              {
+                paddingVertical: 13,
+                alignItems: 'center',
+                opacity: isConnecting ? 0.65 : 1,
+              },
+            ]}
+          >
+            {isConnecting ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 9,
+                }}
+              >
+                <ActivityIndicator color="#ffffff" />
+                <Text style={styles.buttonText}>
+                  Connecting to Steam...
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.buttonText}>
+                Connect Steam
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {connectedSteamId ? (
+            <Text
+              style={{
+                color: '#8bd5a7',
+                fontSize: 12,
+                marginTop: 10,
+              }}
+            >
+              Retrieved library for Steam ID: {connectedSteamId}
+            </Text>
+          ) : null}
+
+          {steamMessage ? (
+            <Text
+              style={[
+                styles.subText,
+                { marginTop: 10 },
+              ]}
+            >
+              {steamMessage}
+            </Text>
+          ) : null}
+
+          {/* STEAM GAME PREVIEW */}
+          {steamGames.length > 0 ? (
+            <View style={{ marginTop: 18 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 10,
+                }}
+              >
+                <Text style={styles.text}>
+                  Import Preview
+                </Text>
+
+                <Text
+                  style={{
+                    color: '#66c0f4',
+                    fontSize: 13,
+                    fontWeight: '800',
+                  }}
+                >
+                  {steamGames.length} GAMES
+                </Text>
+              </View>
+
+              {steamGames.map((game) => (
+                <View
+                  key={String(game.appId)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: '#0a1220',
+                    borderWidth: 1,
+                    borderColor: '#1c2b40',
+                    borderRadius: 9,
+                    padding: 11,
+                    marginBottom: 7,
+                  }}
+                >
+                  <View style={{ flex: 1, paddingRight: 10 }}>
+                    <Text
+                      style={{
+                        color: '#ffffff',
+                        fontSize: 13,
+                        fontWeight: '700',
+                      }}
+                    >
+                      {game.title}
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: '#8292a8',
+                        fontSize: 11,
+                        marginTop: 4,
+                      }}
+                    >
+                      App ID: {game.appId}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={{
+                      color: '#66c0f4',
+                      fontSize: 12,
+                      fontWeight: '800',
+                    }}
+                  >
+                    {Number(game.hours || 0).toFixed(1)} hrs
+                  </Text>
+                </View>
+              ))}
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                activeOpacity={0.8}
+                disabled={isImporting}
+                onPress={importSteamLibrary}
+                style={[
+                  styles.smallButton,
+                  {
+                    alignItems: 'center',
+                    paddingVertical: 14,
+                    marginTop: 10,
+                    opacity: isImporting ? 0.65 : 1,
+                  },
+                ]}
+              >
+                {isImporting ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    Import {steamGames.length} Games into GameVault
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
+          <Text
+            style={[
+              styles.helperText,
+              { marginTop: 12 },
+            ]}
+          >
+            Your Steam Game Details privacy must be set to Public for the library to be retrieved.
+          </Text>
+        </View>
+
+        {/* STORE CARDS */}
         {storeOptions.map((store) => {
           const details = storeDetails[store.id];
           const count = storeCounts[store.id] || 0;
@@ -287,18 +671,6 @@ export default function StoresScreen({ navigation, games = [] }) {
             {storeCounts.unassigned} Games
           </Text>
         </View>
-
-        <Text
-          style={[
-            styles.helperText,
-            {
-              textAlign: 'center',
-              marginTop: 8,
-            },
-          ]}
-        >
-          Store account integration will be added in future updates.
-        </Text>
       </ScrollView>
     </View>
   );

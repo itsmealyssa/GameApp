@@ -30,7 +30,11 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Main navigation tabs
-function MainTabs({ games, storageError }) {
+function MainTabs({
+  games,
+  storageError,
+  onImportSteamGames,
+}) {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: '#060a11' }}
@@ -108,6 +112,7 @@ function MainTabs({ games, storageError }) {
             <StoresScreen
               {...props}
               games={games}
+              onImportSteamGames={onImportSteamGames}
             />
           )}
         </Tab.Screen>
@@ -207,6 +212,66 @@ export default function App() {
     );
   }, []);
 
+  // Import games retrieved from Steam.
+  // Existing games keep their status and rating.
+  const importSteamGames = useCallback((steamGames) => {
+    if (!Array.isArray(steamGames) || steamGames.length === 0) {
+      return 0;
+    }
+
+    setStorageError('');
+    setPersistEnabled(true);
+
+    setGames((currentGames) => {
+      const updatedGames = [...currentGames];
+
+      steamGames.forEach((steamGame) => {
+        const appId = Number(steamGame.appId);
+
+        if (!Number.isSafeInteger(appId) || appId <= 0) {
+          return;
+        }
+
+        const existingIndex = updatedGames.findIndex(
+          (game) =>
+            Number(game.steamAppId) === appId ||
+            game.id === `steam-${appId}`
+        );
+
+        if (existingIndex >= 0) {
+          const existingGame = updatedGames[existingIndex];
+
+          updatedGames[existingIndex] = {
+            ...existingGame,
+            title: steamGame.title || existingGame.title,
+            platform: 'PC',
+            storeId: 'steam',
+            steamAppId: appId,
+            hours: Number(steamGame.hours) || 0,
+            imageUrl:
+              steamGame.imageUrl || existingGame.imageUrl || '',
+          };
+        } else {
+          updatedGames.push({
+            id: `steam-${appId}`,
+            steamAppId: appId,
+            title: steamGame.title || `Steam App ${appId}`,
+            platform: 'PC',
+            storeId: 'steam',
+            status: 'Backlog',
+            rating: 0,
+            hours: Number(steamGame.hours) || 0,
+            imageUrl: steamGame.imageUrl || '',
+          });
+        }
+      });
+
+      return updatedGames;
+    });
+
+    return steamGames.length;
+  }, []);
+
   return (
     <SafeAreaProvider>
       <StatusBar
@@ -249,6 +314,7 @@ export default function App() {
                   {...props}
                   games={games}
                   storageError={storageError}
+                  onImportSteamGames={importSteamGames}
                 />
               )}
             </Stack.Screen>

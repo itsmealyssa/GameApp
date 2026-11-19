@@ -87,6 +87,8 @@ export function normalizeGame(game, index = 0) {
     (store) => store.id === game.storeId
   );
 
+  const steamAppId = Number(game.steamAppId);
+
   return {
     id: String(game.id || `legacy-${index}`),
     title,
@@ -99,6 +101,10 @@ export function normalizeGame(game, index = 0) {
     hours: Number.isFinite(hoursValue)
       ? Math.max(0, hoursValue)
       : 0,
+
+    ...(Number.isSafeInteger(steamAppId) && steamAppId > 0
+      ? { steamAppId }
+      : {}),
 
     ...(imageUrl ? { imageUrl } : {}),
 
