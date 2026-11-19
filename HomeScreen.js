@@ -30,6 +30,7 @@ export default function HomeScreen({
   const [filter, setFilter] = useState('All');
   const [storeFilter, setStoreFilter] = useState('All');
   const [query, setQuery] = useState('');
+  const [showStoreFilters, setShowStoreFilters] = useState(false);
 
   const stats = getCollectionStats(games);
   const normalizedQuery = query.trim().toLowerCase();
@@ -39,6 +40,10 @@ export default function HomeScreen({
     ...storeOptions,
     { id: 'unassigned', name: 'Unassigned' },
   ];
+
+  const selectedStore = storeFilters.find(
+    (store) => store.id === storeFilter
+  );
 
   const shownGames = games.filter((game) => {
     const matchesStatus =
@@ -75,7 +80,7 @@ export default function HomeScreen({
       <Text style={styles.title}>My Games</Text>
 
       <Text style={styles.subText}>
-        {stats.total} owned · {stats.completed} completed · {stats.totalHours} hours
+        {stats.total} owned · {stats.completed} completed · {Number(stats.totalHours.toFixed(1))} hours
       </Text>
 
       {/* STORAGE ERROR */}
@@ -116,9 +121,9 @@ export default function HomeScreen({
           styles.input,
           styles.searchInput,
           {
-            marginTop: 16,
-            marginBottom: 12,
-            minHeight: 58,
+            marginTop: 12,
+            marginBottom: 8,
+            minHeight: 52,
           },
         ]}
         value={query}
@@ -126,13 +131,20 @@ export default function HomeScreen({
       />
 
       {/* STATUS FILTERS */}
-      <Text style={styles.label}>Filter by Status</Text>
+      <Text
+        style={[
+          styles.label,
+          { marginTop: 6, marginBottom: 4 },
+        ]}
+      >
+        Filter by Status
+      </Text>
 
       <View
         style={[
           styles.row,
           {
-            marginBottom: 14,
+            marginBottom: 8,
             gap: 8,
           },
         ]}
@@ -147,6 +159,7 @@ export default function HomeScreen({
             style={[
               styles.chip,
               filter === option ? styles.chipActive : null,
+              { paddingVertical: 7, paddingHorizontal: 12 },
             ]}
             onPress={() => setFilter(option)}
           >
@@ -163,59 +176,86 @@ export default function HomeScreen({
         ))}
       </View>
 
-      {/* STORE FILTERS */}
-      <Text style={styles.label}>Filter by Store</Text>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{
-          flexGrow: 0,
-          flexShrink: 0,
-          marginBottom: 14,
+      {/* COLLAPSIBLE STORE FILTERS */}
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityState={{
+          expanded: showStoreFilters,
         }}
-        contentContainerStyle={{
+        onPress={() => setShowStoreFilters(!showStoreFilters)}
+        style={{
           flexDirection: 'row',
-          alignItems: 'flex-start',
-          gap: 8,
-          paddingBottom: 4,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: 11,
+          paddingHorizontal: 12,
+          backgroundColor: '#0c1320',
+          borderWidth: 1,
+          borderColor: '#182338',
+          borderRadius: 10,
+          marginBottom: 8,
         }}
       >
-        {storeFilters.map((store) => (
-          <TouchableOpacity
-            key={store.id}
-            accessibilityRole="button"
-            accessibilityState={{
-              selected: storeFilter === store.id,
-            }}
-            style={[
-              styles.chip,
-              {
-                alignSelf: 'flex-start',
-                height: 38,
-                justifyContent: 'center',
-              },
-              storeFilter === store.id
-                ? styles.chipActive
-                : null,
-            ]}
-            onPress={() => setStoreFilter(store.id)}
-          >
-            <Text
-              style={
+        <Text style={styles.chipText}>
+          Filter by Store: {selectedStore?.name || 'All Stores'}
+        </Text>
+
+        <Text style={styles.chipText}>
+          {showStoreFilters ? '▲' : '▼'}
+        </Text>
+      </TouchableOpacity>
+
+      {showStoreFilters && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{
+            flexGrow: 0,
+            marginBottom: 10,
+          }}
+          contentContainerStyle={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingBottom: 4,
+          }}
+        >
+          {storeFilters.map((store) => (
+            <TouchableOpacity
+              key={store.id}
+              accessibilityRole="button"
+              accessibilityState={{
+                selected: storeFilter === store.id,
+              }}
+              style={[
+                styles.chip,
                 storeFilter === store.id
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
+                  ? styles.chipActive
+                  : null,
+              ]}
+              onPress={() => setStoreFilter(store.id)}
             >
-              {store.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={
+                  storeFilter === store.id
+                    ? styles.chipTextActive
+                    : styles.chipText
+                }
+              >
+                {store.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
       {/* RESULTS COUNT */}
-      <Text style={[styles.subText, { marginBottom: 8 }]}>
+      <Text
+        style={[
+          styles.subText,
+          { marginBottom: 4 },
+        ]}
+      >
         Showing {shownGames.length} of {games.length} games
       </Text>
 
@@ -303,9 +343,9 @@ export default function HomeScreen({
         style={[
           styles.row,
           {
-            marginTop: 12,
+            marginTop: 8,
             marginBottom: 4,
-            gap: 12,
+            gap: 10,
             flexWrap: 'nowrap',
           },
         ]}
