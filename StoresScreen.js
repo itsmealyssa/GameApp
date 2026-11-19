@@ -75,7 +75,7 @@ export default function StoresScreen({
   const openStore = async (url) => {
     try {
       await Linking.openURL(url);
-    } catch (error) {
+    } catch {
       Alert.alert(
         'Unable to open store',
         'Please check your internet connection and try again.'
@@ -90,7 +90,6 @@ export default function StoresScreen({
     });
   };
 
-  // Retrieve the public game library from the Cloudflare Worker.
   const connectSteam = async () => {
     const cleanSteamId = steamId.trim();
 
@@ -132,27 +131,21 @@ export default function StoresScreen({
       setSteamGames(result.games);
       setConnectedSteamId(cleanSteamId);
 
-      if (result.games.length === 0) {
-        setSteamMessage(
-          'No games were found in this Steam library.'
-        );
-      } else {
-        setSteamMessage(
-          `Successfully retrieved ${result.games.length} games. Review them below before importing.`
-        );
-      }
+      setSteamMessage(
+        result.games.length
+          ? `Successfully retrieved ${result.games.length} games. Review them before importing.`
+          : 'No games were found in this Steam library.'
+      );
     } catch (error) {
       Alert.alert(
         'Steam Connection Failed',
-        error.message ||
-          'Unable to connect to Steam. Please try again.'
+        error.message || 'Unable to connect to Steam. Please try again.'
       );
     } finally {
       setIsConnecting(false);
     }
   };
 
-  // Import the previewed games into GameVault.
   const importSteamLibrary = () => {
     if (!steamGames.length) {
       Alert.alert(
@@ -185,7 +178,7 @@ export default function StoresScreen({
       );
 
       setSteamGames([]);
-    } catch (error) {
+    } catch {
       Alert.alert(
         'Import Failed',
         'GameVault could not import the Steam games. Please try again.'
@@ -212,14 +205,15 @@ export default function StoresScreen({
 
       {/* COLLECTION SUMMARY */}
       <View
-        style={[
-          styles.card,
-          {
-            marginTop: 16,
-            marginBottom: 4,
-            padding: 16,
-          },
-        ]}
+        style={{
+          backgroundColor: '#0c1320',
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: '#182338',
+          padding: 16,
+          marginTop: 16,
+          marginBottom: 4,
+        }}
       >
         <Text style={styles.label}>Your Store Libraries</Text>
 
@@ -258,30 +252,30 @@ export default function StoresScreen({
           paddingBottom: 24,
         }}
       >
-        {/* STEAM CONNECTION */}
+        {/* STEAM CONNECTION PANEL */}
         <View
-          style={[
-            styles.card,
-            {
-              padding: 16,
-              marginBottom: 18,
-              borderWidth: 1,
-              borderColor: '#263f58',
-            },
-          ]}
+          style={{
+            backgroundColor: '#0c1320',
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#263f58',
+            padding: 16,
+            marginBottom: 18,
+          }}
         >
+          {/* STEAM HEADER */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              marginBottom: 8,
+              marginBottom: 16,
             }}
           >
             <View
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 12,
+                width: 46,
+                height: 46,
+                borderRadius: 13,
                 backgroundColor: '#182c3d',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -291,7 +285,7 @@ export default function StoresScreen({
               <Text
                 style={{
                   color: '#66c0f4',
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: '900',
                 }}
               >
@@ -307,20 +301,17 @@ export default function StoresScreen({
             </View>
           </View>
 
-          <Text
-            style={[
-              styles.helperText,
-              { marginTop: 8, marginBottom: 10 },
-            ]}
-          >
+          <Text style={styles.helperText}>
             Enter a 17-digit Steam ID. Each group member can use their own ID.
           </Text>
 
+          {/* STEAM ID INPUT */}
           <Text
             style={{
               color: '#aab8cc',
               fontSize: 12,
               fontWeight: '700',
+              marginTop: 14,
               marginBottom: 7,
             }}
           >
@@ -343,25 +334,26 @@ export default function StoresScreen({
               borderRadius: 10,
               color: '#ffffff',
               paddingHorizontal: 13,
-              paddingVertical: 12,
+              paddingVertical: 13,
               fontSize: 14,
-              marginBottom: 12,
             }}
           />
 
+          {/* CONNECT BUTTON */}
           <TouchableOpacity
             accessibilityRole="button"
             activeOpacity={0.8}
             disabled={isConnecting}
             onPress={connectSteam}
-            style={[
-              styles.smallButton,
-              {
-                paddingVertical: 13,
-                alignItems: 'center',
-                opacity: isConnecting ? 0.65 : 1,
-              },
-            ]}
+            style={{
+              backgroundColor: '#1683ff',
+              borderRadius: 10,
+              paddingVertical: 13,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 12,
+              opacity: isConnecting ? 0.65 : 1,
+            }}
           >
             {isConnecting ? (
               <View
@@ -383,43 +375,44 @@ export default function StoresScreen({
             )}
           </TouchableOpacity>
 
+          {/* CONNECTION STATUS */}
           {connectedSteamId ? (
             <Text
               style={{
                 color: '#8bd5a7',
                 fontSize: 12,
-                marginTop: 10,
+                marginTop: 12,
               }}
             >
-              Retrieved library for Steam ID: {connectedSteamId}
+              Connected Steam ID: {connectedSteamId}
             </Text>
           ) : null}
 
           {steamMessage ? (
-            <Text
-              style={[
-                styles.subText,
-                { marginTop: 10 },
-              ]}
-            >
+            <Text style={[styles.subText, { marginTop: 10 }]}>
               {steamMessage}
             </Text>
           ) : null}
 
-          {/* STEAM GAME PREVIEW */}
+          {/* GAME PREVIEW */}
           {steamGames.length > 0 ? (
-            <View style={{ marginTop: 18 }}>
+            <View
+              style={{
+                borderTopWidth: 1,
+                borderTopColor: '#26344c',
+                marginTop: 18,
+                paddingTop: 16,
+              }}
+            >
               <View
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: 10,
+                  marginBottom: 12,
                 }}
               >
-                <Text style={styles.text}>
-                  Import Preview
-                </Text>
+                <Text style={styles.text}>Import Preview</Text>
 
                 <Text
                   style={{
@@ -439,15 +432,15 @@ export default function StoresScreen({
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    backgroundColor: '#0a1220',
+                    backgroundColor: '#080f1b',
                     borderWidth: 1,
                     borderColor: '#1c2b40',
                     borderRadius: 9,
-                    padding: 11,
-                    marginBottom: 7,
+                    padding: 12,
+                    marginBottom: 8,
                   }}
                 >
-                  <View style={{ flex: 1, paddingRight: 10 }}>
+                  <View style={{ flex: 1, paddingRight: 12 }}>
                     <Text
                       style={{
                         color: '#ffffff',
@@ -486,15 +479,16 @@ export default function StoresScreen({
                 activeOpacity={0.8}
                 disabled={isImporting}
                 onPress={importSteamLibrary}
-                style={[
-                  styles.smallButton,
-                  {
-                    alignItems: 'center',
-                    paddingVertical: 14,
-                    marginTop: 10,
-                    opacity: isImporting ? 0.65 : 1,
-                  },
-                ]}
+                style={{
+                  backgroundColor: '#1683ff',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 10,
+                  paddingVertical: 14,
+                  paddingHorizontal: 12,
+                  marginTop: 8,
+                  opacity: isImporting ? 0.65 : 1,
+                }}
               >
                 {isImporting ? (
                   <ActivityIndicator color="#ffffff" />
@@ -507,12 +501,7 @@ export default function StoresScreen({
             </View>
           ) : null}
 
-          <Text
-            style={[
-              styles.helperText,
-              { marginTop: 12 },
-            ]}
-          >
+          <Text style={styles.helperText}>
             Your Steam Game Details privacy must be set to Public for the library to be retrieved.
           </Text>
         </View>
@@ -535,7 +524,6 @@ export default function StoresScreen({
                 },
               ]}
             >
-              {/* STORE ICON */}
               <View
                 style={{
                   width: 52,
@@ -560,22 +548,14 @@ export default function StoresScreen({
                 </Text>
               </View>
 
-              {/* STORE INFORMATION */}
               <View style={{ flex: 1 }}>
-                <Text style={styles.text}>
-                  {store.name}
-                </Text>
+                <Text style={styles.text}>{store.name}</Text>
 
                 <Text style={styles.subText}>
                   {details.subtitle}
                 </Text>
 
-                <Text
-                  style={[
-                    styles.helperText,
-                    { marginTop: 5 },
-                  ]}
-                >
+                <Text style={[styles.helperText, { marginTop: 5 }]}>
                   {details.description}
                 </Text>
 
@@ -590,7 +570,6 @@ export default function StoresScreen({
                   {count} {count === 1 ? 'GAME' : 'GAMES'} IN LIBRARY
                 </Text>
 
-                {/* ACTION BUTTONS */}
                 <View
                   style={{
                     flexDirection: 'row',
@@ -646,13 +625,14 @@ export default function StoresScreen({
 
         {/* UNASSIGNED GAMES */}
         <View
-          style={[
-            styles.card,
-            {
-              padding: 16,
-              marginBottom: 14,
-            },
-          ]}
+          style={{
+            backgroundColor: '#0c1320',
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#182338',
+            padding: 16,
+            marginBottom: 14,
+          }}
         >
           <Text style={styles.text}>Unassigned Games</Text>
 
