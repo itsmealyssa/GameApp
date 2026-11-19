@@ -10,56 +10,49 @@ import {
 } from 'react-native';
 
 import { styles } from './globalStyles';
+import { storeOptions, getStoreCounts } from './data';
 
-const stores = [
-  {
-    id: 'steam',
-    name: 'Steam',
+const storeDetails = {
+  steam: {
     subtitle: 'PC Gaming Platform',
     description: 'Discover, purchase, and manage PC games.',
     icon: 'S',
     color: '#66c0f4',
     url: 'https://store.steampowered.com/',
   },
-  {
-    id: 'epic',
-    name: 'Epic Games',
+  epic: {
     subtitle: 'PC Gaming Platform',
     description: 'Explore PC games, offers, and free games.',
     icon: 'E',
     color: '#ffffff',
     url: 'https://store.epicgames.com/',
   },
-  {
-    id: 'playstation',
-    name: 'PlayStation',
+  playstation: {
     subtitle: 'Console Gaming Platform',
     description: 'Explore games for PlayStation consoles.',
     icon: 'P',
     color: '#1683ff',
     url: 'https://www.playstation.com/',
   },
-  {
-    id: 'xbox',
-    name: 'Xbox',
+  xbox: {
     subtitle: 'Console Gaming Platform',
     description: 'Discover Xbox games and services.',
     icon: 'X',
     color: '#107c10',
     url: 'https://www.xbox.com/games/store',
   },
-  {
-    id: 'nintendo',
-    name: 'Nintendo',
+  nintendo: {
     subtitle: 'Console Gaming Platform',
     description: 'Explore Nintendo games and products.',
     icon: 'N',
     color: '#e60012',
     url: 'https://www.nintendo.com/store/',
   },
-];
+};
 
-export default function StoresScreen() {
+export default function StoresScreen({ games = [] }) {
+  const storeCounts = getStoreCounts(games);
+  const totalGames = games.length;
 
   const openStore = async (url) => {
     try {
@@ -74,7 +67,6 @@ export default function StoresScreen() {
 
   return (
     <View style={styles.container}>
-
       <View style={styles.headerBrand}>
         <Text style={styles.brandTitle}>GAMEVAULT</Text>
         <Text style={styles.brandSubtitle}>
@@ -85,114 +77,185 @@ export default function StoresScreen() {
       <Text style={styles.title}>Game Stores</Text>
 
       <Text style={styles.subText}>
-        Browse your favorite gaming platforms.
+        Track your games across different gaming platforms.
       </Text>
+
+      {/* COLLECTION SUMMARY */}
+      <View
+        style={[
+          styles.card,
+          {
+            marginTop: 16,
+            marginBottom: 4,
+            padding: 16,
+          },
+        ]}
+      >
+        <Text style={styles.label}>Your Store Libraries</Text>
+
+        <Text
+          style={{
+            color: '#ffffff',
+            fontSize: 28,
+            fontWeight: '900',
+            marginTop: 5,
+          }}
+        >
+          {totalGames} Games
+        </Text>
+
+        <Text style={styles.subText}>
+          {totalGames - storeCounts.unassigned} assigned to stores
+        </Text>
+
+        <Text
+          style={{
+            color: '#f9a825',
+            fontSize: 12,
+            fontWeight: '700',
+            marginTop: 8,
+          }}
+        >
+          {storeCounts.unassigned} UNASSIGNED
+        </Text>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 18, paddingBottom: 24 }}
+        contentContainerStyle={{
+          paddingTop: 18,
+          paddingBottom: 24,
+        }}
       >
+        {storeOptions.map((store) => {
+          const details = storeDetails[store.id];
+          const count = storeCounts[store.id] || 0;
 
-        {stores.map((store) => (
-
-          <View
-            key={store.id}
-            style={[
-              styles.card,
-              {
-                alignItems: 'center',
-                padding: 14,
-                marginBottom: 14,
-              },
-            ]}
-          >
-
-            {/* STORE ICON */}
+          return (
             <View
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: 14,
-                backgroundColor: '#182338',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: 12,
-                borderWidth: 1,
-                borderColor: '#26344c',
-              }}
+              key={store.id}
+              style={[
+                styles.card,
+                {
+                  alignItems: 'center',
+                  padding: 14,
+                  marginBottom: 14,
+                },
+              ]}
             >
-              <Text
+              {/* STORE ICON */}
+              <View
                 style={{
-                  color: store.color,
-                  fontSize: 25,
-                  fontWeight: '900',
+                  width: 52,
+                  height: 52,
+                  borderRadius: 14,
+                  backgroundColor: '#182338',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 12,
+                  borderWidth: 1,
+                  borderColor: '#26344c',
                 }}
               >
-                {store.icon}
-              </Text>
-            </View>
-
-            {/* STORE INFORMATION */}
-            <View style={{ flex: 1 }}>
-
-              <Text style={styles.text}>
-                {store.name}
-              </Text>
-
-              <Text style={styles.subText}>
-                {store.subtitle}
-              </Text>
-
-              <Text
-                style={[
-                  styles.helperText,
-                  { marginTop: 5 },
-                ]}
-              >
-                {store.description}
-              </Text>
-
-              <Text
-                style={{
-                  color: '#f9a825',
-                  fontSize: 11,
-                  fontWeight: '700',
-                  marginTop: 8,
-                }}
-              >
-                NOT CONNECTED
-              </Text>
-
-              <TouchableOpacity
-                accessibilityRole="button"
-                style={[
-                  styles.smallButton,
-                  { marginTop: 10 },
-                ]}
-                onPress={() => openStore(store.url)}
-              >
-                <Text style={styles.buttonText}>
-                  Visit Store ↗
+                <Text
+                  style={{
+                    color: details.color,
+                    fontSize: 25,
+                    fontWeight: '900',
+                  }}
+                >
+                  {details.icon}
                 </Text>
-              </TouchableOpacity>
+              </View>
 
+              {/* STORE INFORMATION */}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.text}>
+                  {store.name}
+                </Text>
+
+                <Text style={styles.subText}>
+                  {details.subtitle}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.helperText,
+                    { marginTop: 5 },
+                  ]}
+                >
+                  {details.description}
+                </Text>
+
+                {/* GAME COUNT */}
+                <Text
+                  style={{
+                    color: '#1683ff',
+                    fontSize: 13,
+                    fontWeight: '800',
+                    marginTop: 9,
+                  }}
+                >
+                  {count} {count === 1 ? 'GAME' : 'GAMES'} IN LIBRARY
+                </Text>
+
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  style={[
+                    styles.smallButton,
+                    { marginTop: 10 },
+                  ]}
+                  onPress={() => openStore(details.url)}
+                >
+                  <Text style={styles.buttonText}>
+                    Visit Store ↗
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
+          );
+        })}
 
-          </View>
+        {/* UNASSIGNED GAMES */}
+        <View
+          style={[
+            styles.card,
+            {
+              padding: 16,
+              marginBottom: 14,
+            },
+          ]}
+        >
+          <Text style={styles.text}>Unassigned Games</Text>
 
-        ))}
+          <Text style={styles.subText}>
+            Games without a selected store.
+          </Text>
+
+          <Text
+            style={{
+              color: '#f9a825',
+              fontSize: 20,
+              fontWeight: '900',
+              marginTop: 8,
+            }}
+          >
+            {storeCounts.unassigned} Games
+          </Text>
+        </View>
 
         <Text
           style={[
             styles.helperText,
-            { textAlign: 'center', marginTop: 8 },
+            {
+              textAlign: 'center',
+              marginTop: 8,
+            },
           ]}
         >
           Store account integration will be added in future updates.
         </Text>
-
       </ScrollView>
-
     </View>
   );
 }

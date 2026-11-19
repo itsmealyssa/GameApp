@@ -102,10 +102,14 @@ function MainTabs({ games, storageError }) {
           )}
         </Tab.Screen>
 
-        <Tab.Screen
-          name="Stores"
-          component={StoresScreen}
-        />
+        <Tab.Screen name="Stores">
+  {(props) => (
+    <StoresScreen
+      {...props}
+      games={games}
+    />
+  )}
+</Tab.Screen>
       </Tab.Navigator>
     </SafeAreaView>
   );
