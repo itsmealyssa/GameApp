@@ -17,6 +17,7 @@ import HomeScreen from './HomeScreen';
 import BacklogScreen from './BacklogScreen';
 import StatsScreen from './StatsScreen';
 import StoresScreen from './StoresScreen';
+import StoreLibraryScreen from './StoreLibraryScreen';
 import AddGameScreen from './AddGameScreen';
 import DetailsScreen from './DetailsScreen';
 import GameSearchScreen from './GameSearchScreen';
@@ -103,13 +104,13 @@ function MainTabs({ games, storageError }) {
         </Tab.Screen>
 
         <Tab.Screen name="Stores">
-  {(props) => (
-    <StoresScreen
-      {...props}
-      games={games}
-    />
-  )}
-</Tab.Screen>
+          {(props) => (
+            <StoresScreen
+              {...props}
+              games={games}
+            />
+          )}
+        </Tab.Screen>
       </Tab.Navigator>
     </SafeAreaView>
   );
@@ -208,7 +209,6 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      {/* Android status bar */}
       <StatusBar
         style="light"
         backgroundColor="#060a11"
@@ -249,6 +249,21 @@ export default function App() {
                   {...props}
                   games={games}
                   storageError={storageError}
+                />
+              )}
+            </Stack.Screen>
+
+            {/* Store library */}
+            <Stack.Screen
+              name="StoreLibrary"
+              options={({ route }) => ({
+                title: `${route.params?.storeName || 'Store'} Library`,
+              })}
+            >
+              {(props) => (
+                <StoreLibraryScreen
+                  {...props}
+                  games={games}
                 />
               )}
             </Stack.Screen>
@@ -297,4 +312,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
