@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import {
   FlatList,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -9,11 +10,14 @@ import {
 } from 'react-native';
 
 import { styles } from './globalStyles';
+
 import {
   getCollectionStats,
   getStatusColor,
   getStars,
+  getStoreName,
   statusOptions,
+  storeOptions,
 } from './data';
 
 import GameCover from './GameCover';
@@ -24,21 +28,36 @@ export default function HomeScreen({
   storageError = '',
 }) {
   const [filter, setFilter] = useState('All');
+  const [storeFilter, setStoreFilter] = useState('All');
   const [query, setQuery] = useState('');
 
   const stats = getCollectionStats(games);
   const normalizedQuery = query.trim().toLowerCase();
 
+  const storeFilters = [
+    { id: 'All', name: 'All Stores' },
+    ...storeOptions,
+    { id: 'unassigned', name: 'Unassigned' },
+  ];
+
   const shownGames = games.filter((game) => {
     const matchesStatus =
       filter === 'All' || game.status === filter;
 
+    const matchesStore =
+      storeFilter === 'All'
+        ? true
+        : storeFilter === 'unassigned'
+          ? !game.storeId
+          : game.storeId === storeFilter;
+
     const matchesSearch =
       !normalizedQuery ||
       game.title.toLowerCase().includes(normalizedQuery) ||
-      game.platform.toLowerCase().includes(normalizedQuery);
+      game.platform.toLowerCase().includes(normalizedQuery) ||
+      getStoreName(game.storeId).toLowerCase().includes(normalizedQuery);
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesStore && matchesSearch;
   });
 
   return (
@@ -62,7 +81,9 @@ export default function HomeScreen({
       {/* STORAGE ERROR */}
       {storageError ? (
         <View style={styles.notice}>
-          <Text style={styles.noticeText}>{storageError}</Text>
+          <Text style={styles.noticeText}>
+            {storageError}
+          </Text>
         </View>
       ) : null}
 
@@ -75,8 +96,12 @@ export default function HomeScreen({
           { value: stats.completed, label: 'DONE' },
         ].map((item) => (
           <View key={item.label} style={styles.statBox}>
-            <Text style={styles.statNumber}>{item.value}</Text>
-            <Text style={styles.subText}>{item.label}</Text>
+            <Text style={styles.statNumber}>
+              {item.value}
+            </Text>
+            <Text style={styles.subText}>
+              {item.label}
+            </Text>
           </View>
         ))}
       </View>
@@ -85,7 +110,7 @@ export default function HomeScreen({
       <TextInput
         accessibilityLabel="Search your collection"
         autoCapitalize="none"
-        placeholder="Search title or platform"
+        placeholder="Search title, platform or store"
         placeholderTextColor="#64748b"
         style={[
           styles.input,
@@ -101,11 +126,13 @@ export default function HomeScreen({
       />
 
       {/* STATUS FILTERS */}
+      <Text style={styles.label}>Filter by Status</Text>
+
       <View
         style={[
           styles.row,
           {
-            marginBottom: 16,
+            marginBottom: 14,
             gap: 8,
           },
         ]}
@@ -114,6 +141,9 @@ export default function HomeScreen({
           <TouchableOpacity
             key={option}
             accessibilityRole="button"
+            accessibilityState={{
+              selected: filter === option,
+            }}
             style={[
               styles.chip,
               filter === option ? styles.chipActive : null,
@@ -133,13 +163,69 @@ export default function HomeScreen({
         ))}
       </View>
 
+      {/* STORE FILTERS */}
+      <Text style={styles.label}>Filter by Store</Text>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{
+          flexGrow: 0,
+          flexShrink: 0,
+          marginBottom: 14,
+        }}
+        contentContainerStyle={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 8,
+          paddingBottom: 4,
+        }}
+      >
+        {storeFilters.map((store) => (
+          <TouchableOpacity
+            key={store.id}
+            accessibilityRole="button"
+            accessibilityState={{
+              selected: storeFilter === store.id,
+            }}
+            style={[
+              styles.chip,
+              {
+                alignSelf: 'flex-start',
+                height: 38,
+                justifyContent: 'center',
+              },
+              storeFilter === store.id
+                ? styles.chipActive
+                : null,
+            ]}
+            onPress={() => setStoreFilter(store.id)}
+          >
+            <Text
+              style={
+                storeFilter === store.id
+                  ? styles.chipTextActive
+                  : styles.chipText
+              }
+            >
+              {store.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* RESULTS COUNT */}
+      <Text style={[styles.subText, { marginBottom: 8 }]}>
+        Showing {shownGames.length} of {games.length} games
+      </Text>
+
       {/* GAME LIST */}
       <View style={{ flex: 1, minHeight: 100 }}>
         {shownGames.length === 0 ? (
           <Text style={styles.emptyText}>
             {games.length === 0
               ? 'No games yet. Add one to start your collection.'
-              : 'No games match this search.'}
+              : 'No games match your selected filters.'}
           </Text>
         ) : (
           <FlatList
@@ -148,7 +234,10 @@ export default function HomeScreen({
             keyExtractor={(game) => game.id}
             contentContainerStyle={[
               styles.listContent,
-              { paddingTop: 4, paddingBottom: 12 },
+              {
+                paddingTop: 4,
+                paddingBottom: 12,
+              },
             ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
@@ -172,6 +261,10 @@ export default function HomeScreen({
 
                   <Text style={styles.subText}>
                     {item.platform}
+                  </Text>
+
+                  <Text style={styles.subText}>
+                    {getStoreName(item.storeId)}
                   </Text>
 
                   <Text
