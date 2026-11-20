@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { styles } from './globalStyles';
+
 import {
   statusOptions,
   storeOptions,
@@ -48,7 +49,15 @@ export default function DetailsScreen({
     String(game.id).startsWith('steam-');
 
   const changeStore = (storeId) => {
+    if (isSteamImport) return;
+
     onUpdateGame(gameId, { storeId });
+  };
+
+  const changeStatus = (status) => {
+    if (isSteamImport) return;
+
+    onUpdateGame(gameId, { status });
   };
 
   // REMOVE GAME FROM COLLECTION
@@ -126,6 +135,7 @@ export default function DetailsScreen({
         </Text>
       )}
 
+      {/* CURRENT STORY STATUS */}
       <View
         style={[
           styles.badge,
@@ -141,57 +151,71 @@ export default function DetailsScreen({
         </Text>
       </View>
 
-      {/* CHANGE GAME STORE */}
-      <Text style={styles.label}>Change Store</Text>
+      {/* CHANGE GAME STORE - MANUALLY ADDED GAMES ONLY */}
+      {!isSteamImport && (
+        <>
+          <Text style={styles.label}>Change Store</Text>
 
-      <View style={styles.row}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityState={{ selected: !game.storeId }}
-          style={[
-            styles.chip,
-            !game.storeId ? styles.chipActive : null,
-          ]}
-          onPress={() => changeStore(null)}
-        >
-          <Text
-            style={
-              !game.storeId
-                ? styles.chipTextActive
-                : styles.chipText
-            }
-          >
-            Unassigned
-          </Text>
-        </TouchableOpacity>
-
-        {storeOptions.map((store) => (
-          <TouchableOpacity
-            key={store.id}
-            accessibilityRole="button"
-            accessibilityState={{
-              selected: game.storeId === store.id,
-            }}
-            style={[
-              styles.chip,
-              game.storeId === store.id
-                ? styles.chipActive
-                : null,
-            ]}
-            onPress={() => changeStore(store.id)}
-          >
-            <Text
-              style={
-                game.storeId === store.id
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
+          <View style={styles.row}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityState={{
+                selected: !game.storeId,
+              }}
+              style={[
+                styles.chip,
+                !game.storeId ? styles.chipActive : null,
+              ]}
+              onPress={() => changeStore(null)}
             >
-              {store.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text
+                style={
+                  !game.storeId
+                    ? styles.chipTextActive
+                    : styles.chipText
+                }
+              >
+                Unassigned
+              </Text>
+            </TouchableOpacity>
+
+            {storeOptions.map((store) => (
+              <TouchableOpacity
+                key={store.id}
+                accessibilityRole="button"
+                accessibilityState={{
+                  selected: game.storeId === store.id,
+                }}
+                style={[
+                  styles.chip,
+                  game.storeId === store.id
+                    ? styles.chipActive
+                    : null,
+                ]}
+                onPress={() => changeStore(store.id)}
+              >
+                <Text
+                  style={
+                    game.storeId === store.id
+                      ? styles.chipTextActive
+                      : styles.chipText
+                  }
+                >
+                  {store.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      )}
+
+      {/* STEAM LOCK NOTICE */}
+      {isSteamImport && (
+        <Text style={styles.helperText}>
+          Store and story status are locked for Steam-imported games.
+          Steam library information controls the store and synced progress.
+        </Text>
+      )}
 
       {/* YOUR RATING */}
       <Text style={styles.label}>Your Rating</Text>
@@ -219,36 +243,41 @@ export default function DetailsScreen({
           : `You rated this ${game.rating}/5`}
       </Text>
 
-      {/* STORY STATUS */}
-      <Text style={styles.label}>Story Status</Text>
+      {/* STORY STATUS - MANUALLY ADDED GAMES ONLY */}
+      {!isSteamImport && (
+        <>
+          <Text style={styles.label}>Story Status</Text>
 
-      <View style={styles.row}>
-        {statusOptions.map((option) => (
-          <TouchableOpacity
-            key={option}
-            accessibilityRole="button"
-            style={[
-              styles.chip,
-              game.status === option
-                ? styles.chipActive
-                : null,
-            ]}
-            onPress={() =>
-              onUpdateGame(gameId, { status: option })
-            }
-          >
-            <Text
-              style={
-                game.status === option
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
-            >
-              {option}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+          <View style={styles.row}>
+            {statusOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                accessibilityRole="button"
+                accessibilityState={{
+                  selected: game.status === option,
+                }}
+                style={[
+                  styles.chip,
+                  game.status === option
+                    ? styles.chipActive
+                    : null,
+                ]}
+                onPress={() => changeStatus(option)}
+              >
+                <Text
+                  style={
+                    game.status === option
+                      ? styles.chipTextActive
+                      : styles.chipText
+                  }
+                >
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      )}
 
       {/* EDIT GAME - MANUALLY ADDED GAMES ONLY */}
       {!isSteamImport && (
