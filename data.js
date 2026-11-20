@@ -89,6 +89,11 @@ export function normalizeGame(game, index = 0) {
 
   const steamAppId = Number(game.steamAppId);
 
+  const isSteamImport =
+    game.source === 'steam' ||
+    (Number.isSafeInteger(steamAppId) && steamAppId > 0) ||
+    String(game.id || '').startsWith('steam-');
+
   return {
     id: String(game.id || `legacy-${index}`),
     title,
@@ -105,6 +110,8 @@ export function normalizeGame(game, index = 0) {
     ...(Number.isSafeInteger(steamAppId) && steamAppId > 0
       ? { steamAppId }
       : {}),
+
+    ...(isSteamImport ? { source: 'steam' } : {}),
 
     ...(imageUrl ? { imageUrl } : {}),
 

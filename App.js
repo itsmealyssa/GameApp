@@ -29,7 +29,7 @@ import { styles } from './globalStyles';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Main navigation tabs
+// MAIN NAVIGATION TABS
 function MainTabs({
   games,
   storageError,
@@ -62,7 +62,9 @@ function MainTabs({
             } else if (route.name === 'Backlog') {
               iconName = focused ? 'time' : 'time-outline';
             } else if (route.name === 'Stats') {
-              iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+              iconName = focused
+                ? 'bar-chart'
+                : 'bar-chart-outline';
             } else if (route.name === 'Stores') {
               iconName = focused
                 ? 'cloud-upload'
@@ -121,14 +123,14 @@ function MainTabs({
   );
 }
 
-// Root component
+// ROOT COMPONENT
 export default function App() {
   const [games, setGames] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [persistEnabled, setPersistEnabled] = useState(true);
   const [storageError, setStorageError] = useState('');
 
-  // Load saved games
+  // LOAD SAVED GAMES
   useEffect(() => {
     let isActive = true;
 
@@ -159,7 +161,7 @@ export default function App() {
     };
   }, []);
 
-  // Save games whenever the collection changes
+  // SAVE GAMES WHEN COLLECTION CHANGES
   useEffect(() => {
     if (isLoading || !persistEnabled) return;
 
@@ -170,7 +172,7 @@ export default function App() {
     });
   }, [games, isLoading, persistEnabled]);
 
-  // Add or replace a game
+  // ADD OR REPLACE A GAME
   const saveGame = useCallback((game) => {
     setStorageError('');
     setPersistEnabled(true);
@@ -188,7 +190,7 @@ export default function App() {
     });
   }, []);
 
-  // Update game details
+  // UPDATE GAME DETAILS
   const updateGame = useCallback((gameId, changes) => {
     setStorageError('');
     setPersistEnabled(true);
@@ -202,7 +204,7 @@ export default function App() {
     );
   }, []);
 
-  // Remove a game
+  // REMOVE A GAME
   const removeGame = useCallback((gameId) => {
     setStorageError('');
     setPersistEnabled(true);
@@ -212,8 +214,8 @@ export default function App() {
     );
   }, []);
 
-  // Import games retrieved from Steam.
-  // Existing games keep their status and rating.
+  // IMPORT GAMES RETRIEVED FROM STEAM
+  // EXISTING GAMES KEEP THEIR STATUS AND RATING.
   const importSteamGames = useCallback((steamGames) => {
     if (!Array.isArray(steamGames) || steamGames.length === 0) {
       return 0;
@@ -247,14 +249,18 @@ export default function App() {
             platform: 'PC',
             storeId: 'steam',
             steamAppId: appId,
+            source: 'steam',
             hours: Number(steamGame.hours) || 0,
             imageUrl:
-              steamGame.imageUrl || existingGame.imageUrl || '',
+              steamGame.imageUrl ||
+              existingGame.imageUrl ||
+              '',
           };
         } else {
           updatedGames.push({
             id: `steam-${appId}`,
             steamAppId: appId,
+            source: 'steam',
             title: steamGame.title || `Steam App ${appId}`,
             platform: 'PC',
             storeId: 'steam',
@@ -304,7 +310,7 @@ export default function App() {
               },
             }}
           >
-            {/* Main tabs */}
+            {/* MAIN TABS */}
             <Stack.Screen
               name="MainTabs"
               options={{ headerShown: false }}
@@ -319,7 +325,7 @@ export default function App() {
               )}
             </Stack.Screen>
 
-            {/* Store library */}
+            {/* STORE LIBRARY */}
             <Stack.Screen
               name="StoreLibrary"
               options={({ route }) => ({
@@ -334,7 +340,7 @@ export default function App() {
               )}
             </Stack.Screen>
 
-            {/* Add game */}
+            {/* ADD GAME */}
             <Stack.Screen
               name="AddGame"
               options={{ title: 'Add a Game' }}
@@ -348,7 +354,7 @@ export default function App() {
               )}
             </Stack.Screen>
 
-            {/* Game details */}
+            {/* GAME DETAILS */}
             <Stack.Screen
               name="Details"
               options={{ title: 'Game Details' }}
@@ -363,7 +369,7 @@ export default function App() {
               )}
             </Stack.Screen>
 
-            {/* Online game search */}
+            {/* ONLINE GAME SEARCH */}
             <Stack.Screen
               name="GameSearch"
               options={{ title: 'Online Game Search' }}

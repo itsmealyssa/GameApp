@@ -41,6 +41,12 @@ export default function DetailsScreen({
 
   const storeName = getStoreName(game.storeId);
 
+  // Identify Steam-imported games, including older imports.
+  const isSteamImport =
+    game.source === 'steam' ||
+    Number(game.steamAppId) > 0 ||
+    String(game.id).startsWith('steam-');
+
   const changeStore = (storeId) => {
     onUpdateGame(gameId, { storeId });
   };
@@ -106,6 +112,19 @@ export default function DetailsScreen({
       <Text style={styles.subText}>
         {game.hours} hours played
       </Text>
+
+      {isSteamImport && (
+        <Text
+          style={{
+            color: '#66c0f4',
+            fontSize: 12,
+            fontWeight: '700',
+            marginTop: 6,
+          }}
+        >
+          STEAM IMPORTED GAME
+        </Text>
+      )}
 
       <View
         style={[
@@ -231,18 +250,20 @@ export default function DetailsScreen({
         ))}
       </View>
 
-      {/* EDIT GAME */}
-      <TouchableOpacity
-        accessibilityRole="button"
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() =>
-          navigation.navigate('AddGame', { gameId })
-        }
-      >
-        <Text style={styles.buttonText}>
-          Edit Game Details
-        </Text>
-      </TouchableOpacity>
+      {/* EDIT GAME - MANUALLY ADDED GAMES ONLY */}
+      {!isSteamImport && (
+        <TouchableOpacity
+          accessibilityRole="button"
+          style={[styles.button, styles.secondaryButton]}
+          onPress={() =>
+            navigation.navigate('AddGame', { gameId })
+          }
+        >
+          <Text style={styles.buttonText}>
+            Edit Game Details
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* REMOVE GAME */}
       <TouchableOpacity
