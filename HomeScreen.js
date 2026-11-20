@@ -55,13 +55,6 @@ export default function HomeScreen({
 
   const statusFilters = ['All', ...statusOptions];
 
-  const selectedStatus =
-    filter === 'All' ? 'All' : filter;
-
-  const selectedStore =
-    storeFilters.find((store) => store.id === storeFilter)?.name
-    || 'All Stores';
-
   const dropdownOptions =
     openDropdown === 'status'
       ? statusFilters.map((option) => ({
@@ -111,7 +104,7 @@ export default function HomeScreen({
       ) : null}
 
       {/* COLLECTION STATISTICS */}
-      <View style={[styles.statsRow, { marginTop: 12 }]}>
+      <View style={[styles.statsRow, { marginTop: 8 }]}>
         {[
           { value: stats.total, label: 'OWNED' },
           { value: stats.backlog, label: 'BACKLOG' },
@@ -136,8 +129,8 @@ export default function HomeScreen({
         style={{
           flexDirection: 'row',
           gap: 10,
-          marginTop: 14,
-          marginBottom: 10,
+          marginTop: 4,
+          marginBottom: 8,
         }}
       >
         <TouchableOpacity
