@@ -205,44 +205,75 @@ export default function StoresScreen({
         Browse your favorite gaming platforms.
       </Text>
 
-      {/* COLLECTION SUMMARY */}
+      {/* COMPACT COLLECTION SUMMARY */}
       <View
         style={{
           backgroundColor: '#0c1320',
           borderRadius: 14,
           borderWidth: 1,
           borderColor: '#182338',
-          padding: 16,
-          marginTop: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          marginTop: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
-        <Text style={styles.label}>Your Store Libraries</Text>
+        <View>
+          <Text style={styles.label}>Your Store Libraries</Text>
 
-        <Text
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              marginTop: 3,
+            }}
+          >
+            <Text
+              style={{
+                color: '#ffffff',
+                fontSize: 25,
+                fontWeight: '900',
+              }}
+            >
+              {totalGames}
+            </Text>
+
+            <Text
+              style={{
+                color: '#8292a8',
+                fontSize: 13,
+                marginLeft: 6,
+              }}
+            >
+              Games
+            </Text>
+          </View>
+
+          <Text style={[styles.subText, { fontSize: 11, marginTop: 2 }]}>
+            {totalGames - storeCounts.unassigned} assigned to stores
+          </Text>
+        </View>
+
+        <View
           style={{
-            color: '#ffffff',
-            fontSize: 28,
-            fontWeight: '900',
-            marginTop: 5,
+            backgroundColor: '#2b2110',
+            borderRadius: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 7,
           }}
         >
-          {totalGames} Games
-        </Text>
-
-        <Text style={styles.subText}>
-          {totalGames - storeCounts.unassigned} assigned to stores
-        </Text>
-
-        <Text
-          style={{
-            color: '#f9a825',
-            fontSize: 12,
-            fontWeight: '700',
-            marginTop: 8,
-          }}
-        >
-          {storeCounts.unassigned} UNASSIGNED
-        </Text>
+          <Text
+            style={{
+              color: '#f9a825',
+              fontSize: 12,
+              fontWeight: '800',
+            }}
+          >
+            {storeCounts.unassigned} UNASSIGNED
+          </Text>
+        </View>
       </View>
 
       <ScrollView
