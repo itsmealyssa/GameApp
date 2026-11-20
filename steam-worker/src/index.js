@@ -16,6 +16,97 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+function parseSteamProfile(input) {
+  const value = String(input || '').trim();
+
+  if (!value) {
+    throw new Error('Enter your Steam ID or profile link.');
+  }
+
+  if (/^\d{17}$/.test(value)) {
+    return { steamId: value };
+  }
+
+  let profile = value;
+
+  if (/^https?:\/\//i.test(value)) {
+    let parsed;
+
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw new Error('Invalid Steam profile URL.');
+    }
+
+    const host = parsed.hostname.toLowerCase();
+
+    if (
+      host !== 'steamcommunity.com' &&
+      host !== 'www.steamcommunity.com'
+    ) {
+      throw new Error('Please use a steamcommunity.com profile link.');
+    }
+
+    const parts = parsed.pathname.split('/').filter(Boolean);
+
+    if (parts.length < 2) {
+      throw new Error('Steam profile link is incomplete.');
+    }
+
+    if (parts[0] === 'profiles' && /^\d{17}$/.test(parts[1])) {
+      return { steamId: parts[1] };
+    }
+
+    if (parts[0] === 'id' && parts[1]) {
+      profile = parts[1];
+    } else {
+      throw new Error('Use a Steam /id/ or /profiles/ profile link.');
+    }
+  } else {
+    profile = value;
+  }
+
+  if (
+    !/^[a-zA-Z0-9_-]{2,64}$/.test(profile)
+  ) {
+    throw new Error('Invalid Steam ID or custom profile name.');
+  }
+
+  return { vanityName: profile };
+}
+
+async function resolveSteamId(input, apiKey) {
+  const parsed = parseSteamProfile(input);
+
+  if (parsed.steamId) {
+    return parsed.steamId;
+  }
+
+  const resolveUrl = new URL(
+    'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+  );
+
+  resolveUrl.searchParams.set('key', apiKey);
+  resolveUrl.searchParams.set('vanityurl', parsed.vanityName);
+
+  const response = await fetch(resolveUrl.toString());
+
+  if (!response.ok) {
+    throw new Error('Steam could not resolve this profile.');
+  }
+
+  const result = await response.json();
+  const resolved = result.response;
+
+  if (resolved?.success !== 1 || !/^\d{17}$/.test(resolved.steamid || '')) {
+    throw new Error(
+      'Steam profile not found. Check your custom profile URL.'
+    );
+  }
+
+  return resolved.steamid;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -32,14 +123,29 @@ export default {
       return jsonResponse({ error: 'Route not found.' }, 404);
     }
 
-    const steamId = url.searchParams.get('steamId');
-
-    if (!/^\d{17}$/.test(steamId || '')) {
-      return jsonResponse({ error: 'A valid Steam ID is required.' }, 400);
+    if (!env.STEAM_API_KEY) {
+      return jsonResponse(
+        { error: 'Steam API is not configured.' },
+        500
+      );
     }
 
-    if (!env.STEAM_API_KEY) {
-      return jsonResponse({ error: 'Steam API is not configured.' }, 500);
+    const profileInput =
+      url.searchParams.get('profile') ||
+      url.searchParams.get('steamId');
+
+    let steamId;
+
+    try {
+      steamId = await resolveSteamId(
+        profileInput,
+        env.STEAM_API_KEY
+      );
+    } catch (error) {
+      return jsonResponse(
+        { error: error.message || 'Could not resolve Steam profile.' },
+        400
+      );
     }
 
     const steamUrl = new URL(
@@ -65,9 +171,12 @@ export default {
       const ownedGames = result.response?.games;
 
       if (!Array.isArray(ownedGames)) {
-        return jsonResponse({
-          error: 'Steam returned no visible game list. Check your Game Details privacy settings.',
-        }, 403);
+        return jsonResponse(
+          {
+            error: 'No public game list found. Check your Steam Game Details privacy settings.',
+          },
+          403
+        );
       }
 
       const games = ownedGames.map((game) => ({
@@ -75,10 +184,12 @@ export default {
         title: game.name || `Steam App ${game.appid}`,
         platform: 'PC',
         storeId: 'steam',
-        hours: Math.round((game.playtime_forever || 0) / 60 * 10) / 10,
-        imageUrl: game.img_logo_url
-          ? `https://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_logo_url}.jpg`
-          : `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
+        hours:
+          Math.round(
+            ((game.playtime_forever || 0) / 60) * 10
+          ) / 10,
+        imageUrl:
+          `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
       }));
 
       return jsonResponse({
@@ -86,7 +197,7 @@ export default {
         total: games.length,
         games,
       });
-    } catch (error) {
+    } catch {
       return jsonResponse(
         { error: 'Unable to contact Steam. Please try again.' },
         502

@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 
 import { styles } from './globalStyles';
@@ -16,8 +16,6 @@ import { storeOptions, getStoreCounts } from './data';
 
 const STEAM_API_URL =
   'https://gamevault-steam-api.gamevault-steam-api-kenen.workers.dev/steam/games';
-
-const DEFAULT_STEAM_ID = '76561199234531972';
 
 const storeDetails = {
   steam: {
@@ -62,7 +60,7 @@ export default function StoresScreen({
   games = [],
   onImportSteamGames,
 }) {
-  const [steamId, setSteamId] = useState(DEFAULT_STEAM_ID);
+  const [steamProfile, setSteamProfile] = useState('');
   const [steamGames, setSteamGames] = useState([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -91,12 +89,12 @@ export default function StoresScreen({
   };
 
   const connectSteam = async () => {
-    const cleanSteamId = steamId.trim();
+    const profile = steamProfile.trim();
 
-    if (!/^\d{17}$/.test(cleanSteamId)) {
+    if (!profile) {
       Alert.alert(
-        'Invalid Steam ID',
-        'Please enter a valid 17-digit Steam ID.'
+        'Missing Steam profile',
+        'Enter your Steam ID or profile link.'
       );
       return;
     }
@@ -104,10 +102,11 @@ export default function StoresScreen({
     setIsConnecting(true);
     setSteamGames([]);
     setSteamMessage('');
+    setConnectedSteamId('');
 
     try {
       const response = await fetch(
-        `${STEAM_API_URL}?steamId=${encodeURIComponent(cleanSteamId)}`
+        `${STEAM_API_URL}?profile=${encodeURIComponent(profile)}`
       );
 
       let result;
@@ -115,7 +114,9 @@ export default function StoresScreen({
       try {
         result = await response.json();
       } catch {
-        throw new Error('The Steam server returned an invalid response.');
+        throw new Error(
+          'The Steam server returned an invalid response.'
+        );
       }
 
       if (!response.ok) {
@@ -129,7 +130,7 @@ export default function StoresScreen({
       }
 
       setSteamGames(result.games);
-      setConnectedSteamId(cleanSteamId);
+      setConnectedSteamId(result.steamId || '');
 
       setSteamMessage(
         result.games.length
@@ -172,12 +173,12 @@ export default function StoresScreen({
         `${importedCount} Steam games have been added or synced to GameVault.`
       );
 
+      setSteamGames([]);
+
       Alert.alert(
         'Steam Library Imported',
         `${importedCount} games have been added or updated in your GameVault collection.`
       );
-
-      setSteamGames([]);
     } catch {
       Alert.alert(
         'Import Failed',
@@ -190,6 +191,7 @@ export default function StoresScreen({
 
   return (
     <View style={styles.container}>
+      {/* HEADER */}
       <View style={styles.headerBrand}>
         <Text style={styles.brandTitle}>GAMEVAULT</Text>
         <Text style={styles.brandSubtitle}>
@@ -212,7 +214,6 @@ export default function StoresScreen({
           borderColor: '#182338',
           padding: 16,
           marginTop: 16,
-          marginBottom: 4,
         }}
       >
         <Text style={styles.label}>Your Store Libraries</Text>
@@ -252,7 +253,7 @@ export default function StoresScreen({
           paddingBottom: 24,
         }}
       >
-        {/* STEAM CONNECTION PANEL */}
+        {/* STEAM CONNECTION */}
         <View
           style={{
             backgroundColor: '#0c1320',
@@ -263,7 +264,6 @@ export default function StoresScreen({
             marginBottom: 18,
           }}
         >
-          {/* STEAM HEADER */}
           <View
             style={{
               flexDirection: 'row',
@@ -296,16 +296,15 @@ export default function StoresScreen({
             <View style={{ flex: 1 }}>
               <Text style={styles.text}>Connect Steam</Text>
               <Text style={styles.subText}>
-                Import your public Steam game library
+                Import your Steam game library
               </Text>
             </View>
           </View>
 
           <Text style={styles.helperText}>
-            Enter a 17-digit Steam ID. Each group member can use their own ID.
+            Enter your 17-digit Steam ID or your Steam profile URL.
           </Text>
 
-          {/* STEAM ID INPUT */}
           <Text
             style={{
               color: '#aab8cc',
@@ -315,18 +314,18 @@ export default function StoresScreen({
               marginBottom: 7,
             }}
           >
-            STEAM ID
+            STEAM ID OR PROFILE LINK
           </Text>
 
           <TextInput
-            value={steamId}
-            onChangeText={setSteamId}
-            placeholder="Enter your 17-digit Steam ID"
+            accessibilityLabel="Steam ID or profile link"
+            value={steamProfile}
+            onChangeText={setSteamProfile}
+            placeholder="Steam ID or profile URL"
             placeholderTextColor="#64748b"
-            keyboardType="number-pad"
             autoCapitalize="none"
             autoCorrect={false}
-            maxLength={17}
+            keyboardType="url"
             style={{
               backgroundColor: '#080f1b',
               borderWidth: 1,
@@ -339,7 +338,13 @@ export default function StoresScreen({
             }}
           />
 
-          {/* CONNECT BUTTON */}
+          <Text style={styles.helperText}>
+            Examples:
+            {'\n'}76561199234531972
+            {'\n'}steamcommunity.com/profiles/76561199234531972
+            {'\n'}steamcommunity.com/id/yourusername
+          </Text>
+
           <TouchableOpacity
             accessibilityRole="button"
             activeOpacity={0.8}
@@ -375,7 +380,6 @@ export default function StoresScreen({
             )}
           </TouchableOpacity>
 
-          {/* CONNECTION STATUS */}
           {connectedSteamId ? (
             <Text
               style={{
@@ -384,7 +388,10 @@ export default function StoresScreen({
                 marginTop: 12,
               }}
             >
-              Connected Steam ID: {connectedSteamId}
+              <Text style={{ fontWeight: '700' }}>
+                Connected Steam ID:{' '}
+              </Text>
+              {connectedSteamId}
             </Text>
           ) : null}
 
@@ -394,7 +401,7 @@ export default function StoresScreen({
             </Text>
           ) : null}
 
-          {/* GAME PREVIEW */}
+          {/* IMPORT PREVIEW */}
           {steamGames.length > 0 ? (
             <View
               style={{
@@ -502,11 +509,11 @@ export default function StoresScreen({
           ) : null}
 
           <Text style={styles.helperText}>
-            Your Steam Game Details privacy must be set to Public for the library to be retrieved.
+            Your Steam Game Details privacy must be set to Public for your library to be retrieved.
           </Text>
         </View>
 
-        {/* STORE CARDS */}
+        {/* OTHER STORE CARDS */}
         {storeOptions.map((store) => {
           const details = storeDetails[store.id];
           const count = storeCounts[store.id] || 0;
@@ -581,8 +588,6 @@ export default function StoresScreen({
                 >
                   <TouchableOpacity
                     accessibilityRole="button"
-                    accessibilityLabel={`View ${store.name} library`}
-                    activeOpacity={0.8}
                     style={[
                       styles.smallButton,
                       {
@@ -599,8 +604,6 @@ export default function StoresScreen({
 
                   <TouchableOpacity
                     accessibilityRole="button"
-                    accessibilityLabel={`Visit ${store.name} website`}
-                    activeOpacity={0.8}
                     style={[
                       styles.secondaryButton,
                       {
