@@ -1,117 +1,227 @@
 
-import React from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { styles } from './globalStyles';
+
 import {
   statusOptions,
-  getStatusColor,
-  getStoreName,
+  storeOptions,
+  createGameId,
 } from './data';
 
 import GameCover from './GameCover';
 
-export default function DetailsScreen({
+export default function AddGameScreen({
   route,
   navigation,
-  games,
-  onUpdateGame,
-  onRemoveGame,
+  games = [],
+  onSaveGame,
 }) {
-  const { gameId } = route.params;
+  const params = route.params || {};
+  const gameId = params.gameId;
+  const gameSeed = params.gameSeed;
 
-  const game = games.find((item) => item.id === gameId);
+  const existingGame = gameId
+    ? games.find((game) => game.id === gameId)
+    : null;
 
-  if (!game) {
+  const sourceGame = existingGame || gameSeed || {};
+
+  const [title, setTitle] = useState(sourceGame.title || '');
+  const [platform, setPlatform] = useState(sourceGame.platform || '');
+  const [storeId, setStoreId] = useState(sourceGame.storeId || null);
+  const [status, setStatus] = useState(sourceGame.status || 'Backlog');
+  const [hours, setHours] = useState(String(sourceGame.hours ?? 0));
+  const [rating, setRating] = useState(Number(sourceGame.rating) || 0);
+  const [imageUrl, setImageUrl] = useState(sourceGame.imageUrl || '');
+  const [saving, setSaving] = useState(false);
+
+  const isEditing = Boolean(gameId);
+
+  const previewGame = {
+    id: sourceGame.id || 'new-game-preview',
+    title: title || 'Game Preview',
+    imageUrl,
+    imageAsset: sourceGame.imageAsset,
+  };
+
+  const saveGame = () => {
+    if (saving) return;
+
+    const cleanTitle = title.trim();
+    const cleanPlatform = platform.trim();
+    const parsedHours = Number(hours);
+
+    if (!cleanTitle) {
+      Alert.alert('Missing game title', 'Please enter the game title.');
+      return;
+    }
+
+    if (!cleanPlatform) {
+      Alert.alert('Missing platform', 'Please enter the game platform.');
+      return;
+    }
+
+    if (!Number.isFinite(parsedHours) || parsedHours < 0) {
+      Alert.alert('Invalid hours', 'Please enter a valid number of hours.');
+      return;
+    }
+
+    if (typeof onSaveGame !== 'function') {
+      Alert.alert('Save unavailable', 'The game could not be saved.');
+      return;
+    }
+
+    const game = {
+      id: existingGame?.id || gameSeed?.id || createGameId(),
+      title: cleanTitle,
+      platform: cleanPlatform,
+      storeId,
+      status,
+      rating,
+      hours: parsedHours,
+      imageUrl: imageUrl.trim(),
+      ...(sourceGame.imageAsset
+        ? { imageAsset: sourceGame.imageAsset }
+        : {}),
+      ...(sourceGame.steamAppId
+        ? { steamAppId: sourceGame.steamAppId }
+        : {}),
+    };
+
+    setSaving(true);
+
+    try {
+      onSaveGame(game);
+      navigation.goBack();
+    } catch (error) {
+      setSaving(false);
+      Alert.alert(
+        'Save failed',
+        error.message || 'Could not save this game.'
+      );
+    }
+  };
+
+  if (isEditing && !existingGame) {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>Game not found.</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const ratingNumbers = [1, 2, 3, 4, 5];
-
-  const storeName = getStoreName(game.storeId);
-
-  const removeGame = () =>
-    Alert.alert(
-      'Remove this game?',
-      `${game.title} will be removed from your collection.`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            onRemoveGame(gameId);
-            navigation.goBack();
-          },
-        },
-      ]
-    );
-
   return (
-    <View style={styles.container}>
-      <GameCover game={game} large />
-
-      <Text style={styles.title}>{game.title}</Text>
-
-      <Text style={styles.subText}>
-        Platform: {game.platform}
+    <ScrollView
+      style={{ flex: 1, backgroundColor: '#060a11' }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>
+        {isEditing ? 'Edit Game' : 'Add a Game'}
       </Text>
 
       <Text style={styles.subText}>
-        Store: {storeName || 'Unassigned'}
+        {gameSeed
+          ? 'Review the online game information before adding it.'
+          : isEditing
+            ? 'Update your game information.'
+            : 'Add a game to your personal collection.'}
       </Text>
 
-      <Text style={styles.subText}>
-        {game.hours} hours played
-      </Text>
-
-      <View
-        style={[
-          styles.badge,
-          {
-            backgroundColor: getStatusColor(game.status),
-            alignSelf: 'flex-start',
-            marginTop: 10,
-          },
-        ]}
-      >
-        <Text style={styles.badgeText}>
-          {game.status}
-        </Text>
+      {/* COVER PREVIEW */}
+      <View style={{ alignItems: 'center', marginTop: 20 }}>
+        <GameCover game={previewGame} large />
       </View>
 
-      <Text style={styles.label}>Your Rating</Text>
+      {/* GAME INFORMATION */}
+      <Text style={styles.label}>Game Information</Text>
+
+      <Text style={styles.label}>Game Title</Text>
+      <TextInput
+        accessibilityLabel="Game title"
+        style={styles.input}
+        placeholder="Enter game title"
+        placeholderTextColor="#64748b"
+        value={title}
+        onChangeText={setTitle}
+        autoCapitalize="words"
+      />
+
+      <Text style={styles.label}>Platform</Text>
+      <TextInput
+        accessibilityLabel="Game platform"
+        style={styles.input}
+        placeholder="e.g. PC, PS5, Xbox, Nintendo Switch"
+        placeholderTextColor="#64748b"
+        value={platform}
+        onChangeText={setPlatform}
+        autoCapitalize="words"
+      />
+
+      <Text style={styles.label}>Cover Image URL</Text>
+      <TextInput
+        accessibilityLabel="Cover image URL"
+        style={styles.input}
+        placeholder="Optional image URL"
+        placeholderTextColor="#64748b"
+        value={imageUrl}
+        onChangeText={setImageUrl}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+
+      {/* STORE */}
+      <Text style={styles.label}>Game Store</Text>
 
       <View style={styles.row}>
-        {ratingNumbers.map((number) => (
+        <TouchableOpacity
+          accessibilityRole="button"
+          style={[
+            styles.chip,
+            storeId === null ? styles.chipActive : null,
+          ]}
+          onPress={() => setStoreId(null)}
+        >
+          <Text style={storeId === null ? styles.chipTextActive : styles.chipText}>
+            Unassigned
+          </Text>
+        </TouchableOpacity>
+
+        {storeOptions.map((store) => (
           <TouchableOpacity
-            key={number}
+            key={store.id}
             accessibilityRole="button"
-            accessibilityLabel={`Rate ${number} out of 5`}
-            onPress={() =>
-              onUpdateGame(gameId, { rating: number })
-            }
+            style={[
+              styles.chip,
+              storeId === store.id ? styles.chipActive : null,
+            ]}
+            onPress={() => setStoreId(store.id)}
           >
-            <Text style={styles.star}>
-              {number <= game.rating ? '★' : '☆'}
+            <Text style={storeId === store.id ? styles.chipTextActive : styles.chipText}>
+              {store.name}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.subText}>
-        {game.rating === 0
-          ? 'Not rated yet'
-          : `You rated this ${game.rating}/5`}
-      </Text>
-
+      {/* STATUS */}
+      <Text style={styles.label}>Your Progress</Text>
       <Text style={styles.label}>Story Status</Text>
 
       <View style={styles.row}>
@@ -121,48 +231,82 @@ export default function DetailsScreen({
             accessibilityRole="button"
             style={[
               styles.chip,
-              game.status === option
-                ? styles.chipActive
-                : null,
+              status === option ? styles.chipActive : null,
             ]}
-            onPress={() =>
-              onUpdateGame(gameId, { status: option })
-            }
+            onPress={() => setStatus(option)}
           >
-            <Text
-              style={
-                game.status === option
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
-            >
+            <Text style={status === option ? styles.chipTextActive : styles.chipText}>
               {option}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
+      {/* HOURS */}
+      <Text style={styles.label}>Hours Played</Text>
+      <TextInput
+        accessibilityLabel="Hours played"
+        style={styles.input}
+        placeholder="0"
+        placeholderTextColor="#64748b"
+        value={hours}
+        onChangeText={(value) => {
+          if (/^\d*\.?\d*$/.test(value)) {
+            setHours(value);
+          }
+        }}
+        keyboardType="decimal-pad"
+      />
+
+      {/* RATING */}
+      <Text style={styles.label}>Your Rating</Text>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        {[1, 2, 3, 4, 5].map((number) => (
+          <TouchableOpacity
+            key={number}
+            accessibilityRole="button"
+            accessibilityLabel={`Rate ${number} out of 5`}
+            onPress={() => setRating(number)}
+          >
+            <Text style={styles.star}>
+              {number <= rating ? '★' : '☆'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={styles.subText}>
+        {rating === 0 ? 'Not rated yet' : `${rating} out of 5 stars`}
+      </Text>
+
+      {/* SAVE */}
       <TouchableOpacity
         accessibilityRole="button"
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() =>
-          navigation.navigate('AddGame', { gameId })
-        }
+        disabled={saving}
+        style={[
+          styles.button,
+          saving ? styles.buttonDisabled : null,
+        ]}
+        onPress={saveGame}
       >
         <Text style={styles.buttonText}>
-          Edit Game Details
+          {saving
+            ? 'Saving...'
+            : isEditing
+              ? 'Save Changes'
+              : 'Save Game'}
         </Text>
       </TouchableOpacity>
 
+      {/* CANCEL */}
       <TouchableOpacity
         accessibilityRole="button"
-        style={[styles.button, styles.dangerButton]}
-        onPress={removeGame}
+        style={[styles.button, styles.secondaryButton, { marginTop: 10 }]}
+        onPress={() => navigation.goBack()}
       >
-        <Text style={styles.buttonText}>
-          Remove from Collection
-        </Text>
+        <Text style={styles.buttonText}>Cancel</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
