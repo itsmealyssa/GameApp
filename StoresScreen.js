@@ -12,47 +12,15 @@ import {
 } from 'react-native';
 
 import { styles } from './globalStyles';
-import { storeOptions, getStoreCounts } from './data';
+import { getStoreCounts } from './data';
 
 const STEAM_API_URL =
   'https://gamevault-steam-api.gamevault-steam-api-kenen.workers.dev/steam/games';
 
-const storeDetails = {
-  steam: {
-    subtitle: 'PC Gaming Platform',
-    description: 'Discover, purchase, and manage PC games.',
-    icon: 'S',
-    color: '#66c0f4',
-    url: 'https://store.steampowered.com/',
-  },
-  epic: {
-    subtitle: 'PC Gaming Platform',
-    description: 'Explore PC games, offers, and free games.',
-    icon: 'E',
-    color: '#ffffff',
-    url: 'https://store.epicgames.com/',
-  },
-  playstation: {
-    subtitle: 'Console Gaming Platform',
-    description: 'Explore games for PlayStation consoles.',
-    icon: 'P',
-    color: '#1683ff',
-    url: 'https://www.playstation.com/',
-  },
-  xbox: {
-    subtitle: 'Console Gaming Platform',
-    description: 'Discover Xbox games and services.',
-    icon: 'X',
-    color: '#107c10',
-    url: 'https://www.xbox.com/games/store',
-  },
-  nintendo: {
-    subtitle: 'Console Gaming Platform',
-    description: 'Explore Nintendo games and products.',
-    icon: 'N',
-    color: '#e60012',
-    url: 'https://www.nintendo.com/store/',
-  },
+const steamStore = {
+  id: 'steam',
+  name: 'Steam',
+  url: 'https://store.steampowered.com/',
 };
 
 export default function StoresScreen({
@@ -69,22 +37,23 @@ export default function StoresScreen({
 
   const storeCounts = getStoreCounts(games);
   const totalGames = games.length;
+  const steamCount = storeCounts.steam || 0;
 
   const openStore = async (url) => {
     try {
       await Linking.openURL(url);
     } catch {
       Alert.alert(
-        'Unable to open store',
+        'Unable to open Steam',
         'Please check your internet connection and try again.'
       );
     }
   };
 
-  const openStoreLibrary = (store) => {
+  const openStoreLibrary = () => {
     navigation.navigate('StoreLibrary', {
-      storeId: store.id,
-      storeName: store.name,
+      storeId: steamStore.id,
+      storeName: steamStore.name,
     });
   };
 
@@ -202,7 +171,7 @@ export default function StoresScreen({
       <Text style={styles.title}>Game Stores</Text>
 
       <Text style={styles.subText}>
-        Browse your favorite gaming platforms.
+        Manage your Steam game library.
       </Text>
 
       {/* COMPACT COLLECTION SUMMARY */}
@@ -221,7 +190,7 @@ export default function StoresScreen({
         }}
       >
         <View>
-          <Text style={styles.label}>Your Store Libraries</Text>
+          <Text style={styles.label}>Your GameVault Collection</Text>
 
           <View
             style={{
@@ -252,13 +221,13 @@ export default function StoresScreen({
           </View>
 
           <Text style={[styles.subText, { fontSize: 11, marginTop: 2 }]}>
-            {totalGames - storeCounts.unassigned} assigned to stores
+            {steamCount} in Steam library
           </Text>
         </View>
 
         <View
           style={{
-            backgroundColor: '#2b2110',
+            backgroundColor: '#182c3d',
             borderRadius: 8,
             paddingHorizontal: 10,
             paddingVertical: 7,
@@ -266,12 +235,12 @@ export default function StoresScreen({
         >
           <Text
             style={{
-              color: '#f9a825',
+              color: '#66c0f4',
               fontSize: 12,
               fontWeight: '800',
             }}
           >
-            {storeCounts.unassigned} UNASSIGNED
+            STEAM
           </Text>
         </View>
       </View>
@@ -544,146 +513,109 @@ export default function StoresScreen({
           </Text>
         </View>
 
-        {/* OTHER STORE CARDS */}
-        {storeOptions.map((store) => {
-          const details = storeDetails[store.id];
-          const count = storeCounts[store.id] || 0;
-
-          return (
-            <View
-              key={store.id}
-              style={[
-                styles.card,
-                {
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: 14,
-                  marginBottom: 14,
-                },
-              ]}
-            >
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 14,
-                  backgroundColor: '#182338',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 12,
-                  borderWidth: 1,
-                  borderColor: '#26344c',
-                }}
-              >
-                <Text
-                  style={{
-                    color: details.color,
-                    fontSize: 25,
-                    fontWeight: '900',
-                  }}
-                >
-                  {details.icon}
-                </Text>
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <Text style={styles.text}>{store.name}</Text>
-
-                <Text style={styles.subText}>
-                  {details.subtitle}
-                </Text>
-
-                <Text style={[styles.helperText, { marginTop: 5 }]}>
-                  {details.description}
-                </Text>
-
-                <Text
-                  style={{
-                    color: '#1683ff',
-                    fontSize: 13,
-                    fontWeight: '800',
-                    marginTop: 9,
-                  }}
-                >
-                  {count} {count === 1 ? 'GAME' : 'GAMES'} IN LIBRARY
-                </Text>
-
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    marginTop: 12,
-                    gap: 8,
-                  }}
-                >
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    style={[
-                      styles.smallButton,
-                      {
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
-                      },
-                    ]}
-                    onPress={() => openStoreLibrary(store)}
-                  >
-                    <Text style={styles.buttonText}>
-                      View Library →
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    style={[
-                      styles.secondaryButton,
-                      {
-                        paddingHorizontal: 14,
-                        paddingVertical: 10,
-                        borderRadius: 9,
-                        borderWidth: 1,
-                        borderColor: '#26344c',
-                      },
-                    ]}
-                    onPress={() => openStore(details.url)}
-                  >
-                    <Text style={styles.buttonText}>
-                      Visit Store ↗
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-        })}
-
-        {/* UNASSIGNED GAMES */}
+        {/* STEAM STORE CARD */}
         <View
-          style={{
-            backgroundColor: '#0c1320',
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: '#182338',
-            padding: 16,
-            marginBottom: 14,
-          }}
+          style={[
+            styles.card,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: 14,
+              marginBottom: 14,
+            },
+          ]}
         >
-          <Text style={styles.text}>Unassigned Games</Text>
-
-          <Text style={styles.subText}>
-            Games without a selected store.
-          </Text>
-
-          <Text
+          <View
             style={{
-              color: '#f9a825',
-              fontSize: 20,
-              fontWeight: '900',
-              marginTop: 8,
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              backgroundColor: '#182338',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 12,
+              borderWidth: 1,
+              borderColor: '#26344c',
             }}
           >
-            {storeCounts.unassigned} Games
-          </Text>
+            <Text
+              style={{
+                color: '#66c0f4',
+                fontSize: 25,
+                fontWeight: '900',
+              }}
+            >
+              S
+            </Text>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.text}>Steam</Text>
+
+            <Text style={styles.subText}>
+              PC Gaming Platform
+            </Text>
+
+            <Text style={[styles.helperText, { marginTop: 5 }]}>
+              Discover, purchase, and manage PC games.
+            </Text>
+
+            <Text
+              style={{
+                color: '#1683ff',
+                fontSize: 13,
+                fontWeight: '800',
+                marginTop: 9,
+              }}
+            >
+              {steamCount} {steamCount === 1 ? 'GAME' : 'GAMES'} IN LIBRARY
+            </Text>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                marginTop: 12,
+                gap: 8,
+              }}
+            >
+              <TouchableOpacity
+                accessibilityRole="button"
+                style={[
+                  styles.smallButton,
+                  {
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                  },
+                ]}
+                onPress={openStoreLibrary}
+              >
+                <Text style={styles.buttonText}>
+                  View Library →
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                style={[
+                  styles.secondaryButton,
+                  {
+                    paddingHorizontal: 14,
+                    paddingVertical: 10,
+                    borderRadius: 9,
+                    borderWidth: 1,
+                    borderColor: '#26344c',
+                  },
+                ]}
+                onPress={() => openStore(steamStore.url)}
+              >
+                <Text style={styles.buttonText}>
+                  Visit Store ↗
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </View>
