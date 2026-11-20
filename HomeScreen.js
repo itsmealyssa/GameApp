@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import {
   FlatList,
+  Modal,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -28,7 +29,7 @@ export default function HomeScreen({
 }) {
   const [filter, setFilter] = useState('All');
   const [storeFilter, setStoreFilter] = useState('All');
-  const [showStoreFilters, setShowStoreFilters] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const stats = getCollectionStats(games);
 
@@ -37,10 +38,6 @@ export default function HomeScreen({
     ...storeOptions,
     { id: 'unassigned', name: 'Unassigned' },
   ];
-
-  const selectedStore = storeFilters.find(
-    (store) => store.id === storeFilter
-  );
 
   const shownGames = games.filter((game) => {
     const matchesStatus =
@@ -55,6 +52,36 @@ export default function HomeScreen({
 
     return matchesStatus && matchesStore;
   });
+
+  const statusFilters = ['All', ...statusOptions];
+
+  const selectedStatus =
+    filter === 'All' ? 'All' : filter;
+
+  const selectedStore =
+    storeFilters.find((store) => store.id === storeFilter)?.name
+    || 'All Stores';
+
+  const dropdownOptions =
+    openDropdown === 'status'
+      ? statusFilters.map((option) => ({
+          id: option,
+          name: option,
+        }))
+      : storeFilters;
+
+  const selectedValue =
+    openDropdown === 'status' ? filter : storeFilter;
+
+  const selectOption = (option) => {
+    if (openDropdown === 'status') {
+      setFilter(option.id);
+    } else {
+      setStoreFilter(option.id);
+    }
+
+    setOpenDropdown(null);
+  };
 
   return (
     <View style={[styles.container, { paddingBottom: 8 }]}>
@@ -103,129 +130,145 @@ export default function HomeScreen({
         ))}
       </View>
 
-      {/* STATUS FILTERS */}
-      <Text
-        style={[
-          styles.label,
-          { marginTop: 8, marginBottom: 4 },
-        ]}
-      >
-        Filter by Status
-      </Text>
-
+      {/* COMPACT STATUS AND STORE DROPDOWNS */}
       <View
-        style={[
-          styles.row,
-          {
-            marginBottom: 8,
-            gap: 8,
-          },
-        ]}
-      >
-        {['All', ...statusOptions].map((option) => (
-          <TouchableOpacity
-            key={option}
-            accessibilityRole="button"
-            accessibilityState={{
-              selected: filter === option,
-            }}
-            style={[
-              styles.chip,
-              filter === option ? styles.chipActive : null,
-              {
-                paddingVertical: 7,
-                paddingHorizontal: 12,
-              },
-            ]}
-            onPress={() => setFilter(option)}
-          >
-            <Text
-              style={
-                filter === option
-                  ? styles.chipTextActive
-                  : styles.chipText
-              }
-            >
-              {option}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* COLLAPSIBLE STORE FILTERS */}
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityState={{
-          expanded: showStoreFilters,
-        }}
-        onPress={() =>
-          setShowStoreFilters(!showStoreFilters)
-        }
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingVertical: 11,
-          paddingHorizontal: 12,
-          backgroundColor: '#0c1320',
-          borderWidth: 1,
-          borderColor: '#182338',
-          borderRadius: 10,
-          marginBottom: 8,
+          gap: 10,
+          marginTop: 14,
+          marginBottom: 10,
         }}
       >
-        <Text style={styles.chipText}>
-          Filter by Store: {selectedStore?.name || 'All Stores'}
-        </Text>
-
-        <Text style={styles.chipText}>
-          {showStoreFilters ? '▲' : '▼'}
-        </Text>
-      </TouchableOpacity>
-
-      {showStoreFilters && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Select status filter"
           style={{
-            flexGrow: 0,
-            marginBottom: 10,
-          }}
-          contentContainerStyle={{
+            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 8,
-            paddingBottom: 4,
+            justifyContent: 'space-between',
+            backgroundColor: '#0c1320',
+            borderWidth: 1,
+            borderColor: '#26364d',
+            borderRadius: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 13,
+          }}
+          onPress={() => setOpenDropdown('status')}
+        >
+          <Text style={styles.chipText}>Status</Text>
+          <Text style={styles.chipText}>▼</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Select store filter"
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: '#0c1320',
+            borderWidth: 1,
+            borderColor: '#26364d',
+            borderRadius: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 13,
+          }}
+          onPress={() => setOpenDropdown('store')}
+        >
+          <Text style={styles.chipText}>Store</Text>
+          <Text style={styles.chipText}>▼</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* DROPDOWN OPTIONS */}
+      <Modal
+        visible={openDropdown !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenDropdown(null)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setOpenDropdown(null)}
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            justifyContent: 'center',
+            paddingHorizontal: 28,
           }}
         >
-          {storeFilters.map((store) => (
-            <TouchableOpacity
-              key={store.id}
-              accessibilityRole="button"
-              accessibilityState={{
-                selected: storeFilter === store.id,
-              }}
+          <View
+            style={{
+              backgroundColor: '#0c1320',
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: '#26364d',
+              padding: 16,
+              maxHeight: '70%',
+            }}
+          >
+            <Text
               style={[
-                styles.chip,
-                storeFilter === store.id
-                  ? styles.chipActive
-                  : null,
+                styles.text,
+                { fontSize: 17, marginBottom: 12 },
               ]}
-              onPress={() => setStoreFilter(store.id)}
             >
-              <Text
-                style={
-                  storeFilter === store.id
-                    ? styles.chipTextActive
-                    : styles.chipText
-                }
-              >
-                {store.name}
-              </Text>
+              {openDropdown === 'status' ? 'Status' : 'Store'}
+            </Text>
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled
+            >
+              {dropdownOptions.map((option) => {
+                const isSelected =
+                  selectedValue === option.id;
+
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    onPress={() => selectOption(option)}
+                    style={{
+                      paddingVertical: 13,
+                      paddingHorizontal: 12,
+                      borderRadius: 8,
+                      marginBottom: 5,
+                      backgroundColor: isSelected
+                        ? '#26364d'
+                        : 'transparent',
+                    }}
+                  >
+                    <Text
+                      style={
+                        isSelected
+                          ? styles.chipTextActive
+                          : styles.chipText
+                      }
+                    >
+                      {option.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            <TouchableOpacity
+              onPress={() => setOpenDropdown(null)}
+              style={{
+                alignItems: 'center',
+                paddingVertical: 12,
+                marginTop: 6,
+                borderTopWidth: 1,
+                borderTopColor: '#26364d',
+              }}
+            >
+              <Text style={styles.subText}>Cancel</Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* RESULTS COUNT */}
       <Text
