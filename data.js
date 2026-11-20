@@ -4,6 +4,7 @@
 export const statusOptions = [
   'Backlog',
   'Playing',
+  'Played',
   'Completed',
 ];
 
@@ -156,6 +157,7 @@ export function getStoreCounts(games = []) {
 
 export function getStatusColor(status) {
   if (status === 'Completed') return '#A6E3A1';
+  if (status === 'Played') return '#89B4FA';
   if (status === 'Playing') return '#F9E2AF';
 
   return '#F38BA8';
@@ -190,6 +192,10 @@ export function getCollectionStats(games = []) {
     (game) => game.status === 'Playing'
   ).length;
 
+  const played = safeGames.filter(
+    (game) => game.status === 'Played'
+  ).length;
+
   const backlog = safeGames.filter(
     (game) => game.status === 'Backlog'
   ).length;
@@ -211,6 +217,7 @@ export function getCollectionStats(games = []) {
     total,
     completed,
     playing,
+    played,
     backlog,
     totalHours: safeGames.reduce(
       (sum, game) => sum + game.hours,

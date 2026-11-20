@@ -116,6 +116,7 @@ export default function HomeScreen({
           { value: stats.total, label: 'OWNED' },
           { value: stats.backlog, label: 'BACKLOG' },
           { value: stats.playing, label: 'PLAYING' },
+          { value: stats.played, label: 'PLAYED' },
           { value: stats.completed, label: 'DONE' },
         ].map((item) => (
           <View key={item.label} style={styles.statBox}>

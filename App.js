@@ -215,7 +215,9 @@ export default function App() {
   }, []);
 
   // IMPORT GAMES RETRIEVED FROM STEAM
-  // EXISTING GAMES KEEP THEIR STATUS AND RATING.
+  // GAMES WITH PLAYTIME ARE MARKED AS PLAYED.
+  // ZERO-PLAYTIME GAMES ARE MARKED AS BACKLOG.
+  // EXISTING PLAYING AND COMPLETED STATUSES ARE PRESERVED.
   const importSteamGames = useCallback((steamGames) => {
     if (!Array.isArray(steamGames) || steamGames.length === 0) {
       return 0;
@@ -234,6 +236,15 @@ export default function App() {
           return;
         }
 
+        const hours = Math.max(
+          0,
+          Number(steamGame.hours) || 0
+        );
+
+        const steamStatus = hours > 0
+          ? 'Played'
+          : 'Backlog';
+
         const existingIndex = updatedGames.findIndex(
           (game) =>
             Number(game.steamAppId) === appId ||
@@ -243,6 +254,11 @@ export default function App() {
         if (existingIndex >= 0) {
           const existingGame = updatedGames[existingIndex];
 
+          const preserveManualStatus = [
+            'Playing',
+            'Completed',
+          ].includes(existingGame.status);
+
           updatedGames[existingIndex] = {
             ...existingGame,
             title: steamGame.title || existingGame.title,
@@ -250,7 +266,10 @@ export default function App() {
             storeId: 'steam',
             steamAppId: appId,
             source: 'steam',
-            hours: Number(steamGame.hours) || 0,
+            hours,
+            status: preserveManualStatus
+              ? existingGame.status
+              : steamStatus,
             imageUrl:
               steamGame.imageUrl ||
               existingGame.imageUrl ||
@@ -264,9 +283,9 @@ export default function App() {
             title: steamGame.title || `Steam App ${appId}`,
             platform: 'PC',
             storeId: 'steam',
-            status: 'Backlog',
+            status: steamStatus,
             rating: 0,
-            hours: Number(steamGame.hours) || 0,
+            hours,
             imageUrl: steamGame.imageUrl || '',
           });
         }
