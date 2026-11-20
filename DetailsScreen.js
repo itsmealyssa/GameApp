@@ -1,6 +1,12 @@
 
 import React from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { styles } from './globalStyles';
 import {
@@ -39,7 +45,33 @@ export default function DetailsScreen({
     onUpdateGame(gameId, { storeId });
   };
 
-  const removeGame = () =>
+  // REMOVE GAME FROM COLLECTION
+  const removeGame = () => {
+    const confirmRemoval = () => {
+      if (typeof onRemoveGame !== 'function') {
+        Alert.alert(
+          'Removal Unavailable',
+          'The remove game function is not available.'
+        );
+        return;
+      }
+
+      onRemoveGame(gameId);
+      navigation.goBack();
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `Are you sure you want to remove "${game.title}" from your collection?`
+      );
+
+      if (confirmed) {
+        confirmRemoval();
+      }
+
+      return;
+    }
+
     Alert.alert(
       'Remove this game?',
       `${game.title} will be removed from your collection.`,
@@ -51,13 +83,11 @@ export default function DetailsScreen({
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () => {
-            onRemoveGame(gameId);
-            navigation.goBack();
-          },
+          onPress: confirmRemoval,
         },
       ]
     );
+  };
 
   return (
     <View style={styles.container}>
@@ -144,6 +174,7 @@ export default function DetailsScreen({
         ))}
       </View>
 
+      {/* YOUR RATING */}
       <Text style={styles.label}>Your Rating</Text>
 
       <View style={styles.row}>
@@ -169,6 +200,7 @@ export default function DetailsScreen({
           : `You rated this ${game.rating}/5`}
       </Text>
 
+      {/* STORY STATUS */}
       <Text style={styles.label}>Story Status</Text>
 
       <View style={styles.row}>
@@ -199,6 +231,7 @@ export default function DetailsScreen({
         ))}
       </View>
 
+      {/* EDIT GAME */}
       <TouchableOpacity
         accessibilityRole="button"
         style={[styles.button, styles.secondaryButton]}
@@ -211,8 +244,10 @@ export default function DetailsScreen({
         </Text>
       </TouchableOpacity>
 
+      {/* REMOVE GAME */}
       <TouchableOpacity
         accessibilityRole="button"
+        accessibilityLabel="Remove from Collection"
         style={[styles.button, styles.dangerButton]}
         onPress={removeGame}
       >
