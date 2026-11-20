@@ -26,6 +26,7 @@ export default function StoreLibraryScreen({
 
   return (
     <View style={styles.container}>
+      {/* STORE TITLE */}
       <Text style={styles.title}>
         {storeName}
       </Text>
@@ -34,26 +35,62 @@ export default function StoreLibraryScreen({
         Your {storeName} game collection.
       </Text>
 
+      {/* LIBRARY COUNT */}
       <Text style={[styles.label, { marginTop: 16 }]}>
         {storeGames.length}{' '}
         {storeGames.length === 1 ? 'Game' : 'Games'} in Library
       </Text>
 
+      {/* GAME LIBRARY */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 12, paddingBottom: 24 }}
+        contentContainerStyle={{
+          paddingTop: 12,
+          paddingBottom: 24,
+        }}
       >
         {storeGames.length === 0 ? (
-          <View style={[styles.card, { padding: 20 }]}>
-            <Text style={styles.text}>
+          /* EMPTY LIBRARY MESSAGE */
+          <View
+            style={[
+              styles.card,
+              {
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                padding: 20,
+                width: '100%',
+                gap: 8,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.text,
+                {
+                  width: '100%',
+                  flexWrap: 'wrap',
+                },
+              ]}
+            >
               No games in this library yet.
             </Text>
 
-            <Text style={styles.subText}>
+            <Text
+              style={[
+                styles.subText,
+                {
+                  width: '100%',
+                  flexWrap: 'wrap',
+                  lineHeight: 20,
+                },
+              ]}
+            >
               Add a game and assign it to {storeName}.
             </Text>
           </View>
         ) : (
+          /* GAME LIST */
           storeGames.map((game) => (
             <TouchableOpacity
               key={game.id}
@@ -76,7 +113,12 @@ export default function StoreLibraryScreen({
             >
               <GameCover game={game} />
 
-              <View style={{ flex: 1, marginLeft: 12 }}>
+              <View
+                style={{
+                  flex: 1,
+                  marginLeft: 12,
+                }}
+              >
                 <Text style={styles.text}>
                   {game.title}
                 </Text>
