@@ -22,7 +22,6 @@ import AddGameScreen from './AddGameScreen';
 import DetailsScreen from './DetailsScreen';
 import GameSearchScreen from './GameSearchScreen';
 
-import { initialGames } from './data';
 import { loadGames, saveGames } from './gameStorage';
 import { styles } from './globalStyles';
 
@@ -143,11 +142,11 @@ export default function App() {
       .catch((error) => {
         if (!isActive) return;
 
-        setGames(initialGames);
+        setGames([]);
         setPersistEnabled(false);
 
         setStorageError(
-          `${error.message} Your sample collection is available for this session.`
+          `${error.message} Your saved collection could not be loaded. Please check your storage before making changes.`
         );
       })
       .finally(() => {
@@ -172,21 +171,34 @@ export default function App() {
     });
   }, [games, isLoading, persistEnabled]);
 
-  // ADD OR REPLACE A GAME
+  // ADD RAWG IMPORTS OR UPDATE EXISTING GAMES
   const saveGame = useCallback((game) => {
-    setStorageError('');
-    setPersistEnabled(true);
+    if (!game || !game.id) return;
 
     setGames((currentGames) => {
       const alreadyExists = currentGames.some(
         (item) => item.id === game.id
       );
 
-      return alreadyExists
-        ? currentGames.map((item) =>
-            item.id === game.id ? game : item
-          )
-        : [...currentGames, game];
+      // Existing records may be updated.
+      if (alreadyExists) {
+        setStorageError('');
+        setPersistEnabled(true);
+
+        return currentGames.map((item) =>
+          item.id === game.id ? game : item
+        );
+      }
+
+      // New records must come from RAWG.
+      if (game.source !== 'rawg') {
+        return currentGames;
+      }
+
+      setStorageError('');
+      setPersistEnabled(true);
+
+      return [...currentGames, game];
     });
   }, []);
 
@@ -359,10 +371,10 @@ export default function App() {
               )}
             </Stack.Screen>
 
-            {/* ADD GAME */}
+            {/* RAWG REVIEW / EXISTING GAME EDIT */}
             <Stack.Screen
               name="AddGame"
-              options={{ title: 'Add a Game' }}
+              options={{ title: 'Game Information' }}
             >
               {(props) => (
                 <AddGameScreen

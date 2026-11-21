@@ -14,7 +14,6 @@ import { styles } from './globalStyles';
 import {
   statusOptions,
   storeOptions,
-  createGameId,
 } from './data';
 
 import GameCover from './GameCover';
@@ -33,6 +32,9 @@ export default function AddGameScreen({
     ? games.find((game) => game.id === gameId)
     : null;
 
+  const isEditing = Boolean(gameId);
+  const isImporting = Boolean(gameSeed);
+
   const sourceGame = existingGame || gameSeed || {};
 
   const [title, setTitle] = useState(sourceGame.title || '');
@@ -44,15 +46,60 @@ export default function AddGameScreen({
   const [imageUrl, setImageUrl] = useState(sourceGame.imageUrl || '');
   const [saving, setSaving] = useState(false);
 
-  const isEditing = Boolean(gameId);
-
   const previewGame = {
-    id: sourceGame.id || 'new-game-preview',
+    ...sourceGame,
+    id: sourceGame.id || 'rawg-preview',
     title: title || 'Game Preview',
     imageUrl,
-    imageAsset: sourceGame.imageAsset,
+    source: sourceGame.source || (isImporting ? 'rawg' : undefined),
   };
 
+  // BLOCK MANUAL GAME CREATION
+  if (!isEditing && !isImporting) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Import a Game</Text>
+
+        <Text style={styles.subText}>
+          Games must be imported from Steam or found through online search.
+        </Text>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.replace('GameSearch')}
+        >
+          <Text style={styles.buttonText}>
+            Find Games Online
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // GAME NOT FOUND
+  if (isEditing && !existingGame) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>Game not found.</Text>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // SAVE GAME
   const saveGame = () => {
     if (saving) return;
 
@@ -61,27 +108,39 @@ export default function AddGameScreen({
     const parsedHours = Number(hours);
 
     if (!cleanTitle) {
-      Alert.alert('Missing game title', 'Please enter the game title.');
+      Alert.alert(
+        'Missing game title',
+        'Please enter the game title.'
+      );
       return;
     }
 
     if (!cleanPlatform) {
-      Alert.alert('Missing platform', 'Please enter the game platform.');
+      Alert.alert(
+        'Missing platform',
+        'Please enter the game platform.'
+      );
       return;
     }
 
     if (!Number.isFinite(parsedHours) || parsedHours < 0) {
-      Alert.alert('Invalid hours', 'Please enter a valid number of hours.');
+      Alert.alert(
+        'Invalid hours',
+        'Please enter a valid number of hours.'
+      );
       return;
     }
 
     if (typeof onSaveGame !== 'function') {
-      Alert.alert('Save unavailable', 'The game could not be saved.');
+      Alert.alert(
+        'Save unavailable',
+        'The game could not be saved.'
+      );
       return;
     }
 
     const game = {
-      id: existingGame?.id || gameSeed?.id || createGameId(),
+      id: existingGame?.id || gameSeed.id,
       title: cleanTitle,
       platform: cleanPlatform,
       storeId,
@@ -89,9 +148,20 @@ export default function AddGameScreen({
       rating,
       hours: parsedHours,
       imageUrl: imageUrl.trim(),
+
+      // Preserve the imported game source.
+      ...(sourceGame.source
+        ? { source: sourceGame.source }
+        : isImporting
+          ? { source: 'rawg' }
+          : {}),
+
+      // Preserve local cover images.
       ...(sourceGame.imageAsset
         ? { imageAsset: sourceGame.imageAsset }
         : {}),
+
+      // Preserve Steam identification.
       ...(sourceGame.steamAppId
         ? { steamAppId: sourceGame.steamAppId }
         : {}),
@@ -104,26 +174,13 @@ export default function AddGameScreen({
       navigation.goBack();
     } catch (error) {
       setSaving(false);
+
       Alert.alert(
         'Save failed',
         error.message || 'Could not save this game.'
       );
     }
   };
-
-  if (isEditing && !existingGame) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Game not found.</Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.buttonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   return (
     <ScrollView
@@ -133,15 +190,13 @@ export default function AddGameScreen({
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>
-        {isEditing ? 'Edit Game' : 'Add a Game'}
+        {isEditing ? 'Edit Game' : 'Review Game'}
       </Text>
 
       <Text style={styles.subText}>
-        {gameSeed
-          ? 'Review the online game information before adding it.'
-          : isEditing
-            ? 'Update your game information.'
-            : 'Add a game to your personal collection.'}
+        {isEditing
+          ? 'Update your personal game information.'
+          : 'Review the online game information before importing it.'}
       </Text>
 
       {/* COVER PREVIEW */}
@@ -153,10 +208,11 @@ export default function AddGameScreen({
       <Text style={styles.label}>Game Information</Text>
 
       <Text style={styles.label}>Game Title</Text>
+
       <TextInput
         accessibilityLabel="Game title"
         style={styles.input}
-        placeholder="Enter game title"
+        placeholder="Game title"
         placeholderTextColor="#64748b"
         value={title}
         onChangeText={setTitle}
@@ -164,10 +220,11 @@ export default function AddGameScreen({
       />
 
       <Text style={styles.label}>Platform</Text>
+
       <TextInput
         accessibilityLabel="Game platform"
         style={styles.input}
-        placeholder="e.g. PC, PS5, Xbox, Nintendo Switch"
+        placeholder="e.g. PC, PS5, Xbox"
         placeholderTextColor="#64748b"
         value={platform}
         onChangeText={setPlatform}
@@ -175,10 +232,11 @@ export default function AddGameScreen({
       />
 
       <Text style={styles.label}>Cover Image URL</Text>
+
       <TextInput
         accessibilityLabel="Cover image URL"
         style={styles.input}
-        placeholder="Optional image URL"
+        placeholder="Image URL"
         placeholderTextColor="#64748b"
         value={imageUrl}
         onChangeText={setImageUrl}
@@ -198,7 +256,13 @@ export default function AddGameScreen({
           ]}
           onPress={() => setStoreId(null)}
         >
-          <Text style={storeId === null ? styles.chipTextActive : styles.chipText}>
+          <Text
+            style={
+              storeId === null
+                ? styles.chipTextActive
+                : styles.chipText
+            }
+          >
             Unassigned
           </Text>
         </TouchableOpacity>
@@ -213,7 +277,13 @@ export default function AddGameScreen({
             ]}
             onPress={() => setStoreId(store.id)}
           >
-            <Text style={storeId === store.id ? styles.chipTextActive : styles.chipText}>
+            <Text
+              style={
+                storeId === store.id
+                  ? styles.chipTextActive
+                  : styles.chipText
+              }
+            >
               {store.name}
             </Text>
           </TouchableOpacity>
@@ -235,7 +305,13 @@ export default function AddGameScreen({
             ]}
             onPress={() => setStatus(option)}
           >
-            <Text style={status === option ? styles.chipTextActive : styles.chipText}>
+            <Text
+              style={
+                status === option
+                  ? styles.chipTextActive
+                  : styles.chipText
+              }
+            >
               {option}
             </Text>
           </TouchableOpacity>
@@ -244,6 +320,7 @@ export default function AddGameScreen({
 
       {/* HOURS */}
       <Text style={styles.label}>Hours Played</Text>
+
       <TextInput
         accessibilityLabel="Hours played"
         style={styles.input}
@@ -295,14 +372,18 @@ export default function AddGameScreen({
             ? 'Saving...'
             : isEditing
               ? 'Save Changes'
-              : 'Save Game'}
+              : 'Import Game'}
         </Text>
       </TouchableOpacity>
 
       {/* CANCEL */}
       <TouchableOpacity
         accessibilityRole="button"
-        style={[styles.button, styles.secondaryButton, { marginTop: 10 }]}
+        style={[
+          styles.button,
+          styles.secondaryButton,
+          { marginTop: 10 },
+        ]}
         onPress={() => navigation.goBack()}
       >
         <Text style={styles.buttonText}>Cancel</Text>

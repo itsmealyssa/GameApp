@@ -16,48 +16,26 @@ export const storeOptions = [
   { id: 'nintendo', name: 'Nintendo' },
 ];
 
-export const initialGames = [
-  {
-    id: '1',
-    title: 'Cyberpunk 2077',
-    platform: 'PC',
-    storeId: null,
-    status: 'Completed',
-    rating: 5,
-    hours: 65,
-    imageAsset: 'cyberpunk2077',
-  },
-  {
-    id: '2',
-    title: 'Battlefield 6',
-    platform: 'PS5',
-    storeId: null,
-    status: 'Playing',
-    rating: 4,
-    hours: 45,
-    imageAsset: 'battlefield6',
-  },
-  {
-    id: '3',
-    title: 'The Finals',
-    platform: 'PC',
-    storeId: null,
-    status: 'Backlog',
-    rating: 0,
-    hours: 0,
-    imageAsset: 'thefinals',
-  },
-  {
-    id: '4',
-    title: 'Apex Legends',
-    platform: 'PC',
-    storeId: null,
-    status: 'Playing',
-    rating: 3,
-    hours: 60,
-    imageAsset: 'apexlegends',
-  },
+// New installations start with an empty collection.
+export const initialGames = [];
+
+// Only remove the four original sample records.
+// All three fields must match.
+const sampleGames = [
+  { id: '1', title: 'Cyberpunk 2077', imageAsset: 'cyberpunk2077' },
+  { id: '2', title: 'Battlefield 6', imageAsset: 'battlefield6' },
+  { id: '3', title: 'The Finals', imageAsset: 'thefinals' },
+  { id: '4', title: 'Apex Legends', imageAsset: 'apexlegends' },
 ];
+
+function isExampleGame(game) {
+  return sampleGames.some(
+    (sample) =>
+      game.id === sample.id &&
+      game.title === sample.title &&
+      game.imageAsset === sample.imageAsset
+  );
+}
 
 export function createGameId() {
   return `game-${Date.now()}-${Math.random()
@@ -66,7 +44,9 @@ export function createGameId() {
 }
 
 export function normalizeGame(game, index = 0) {
-  if (!game || typeof game !== 'object') return null;
+  if (!game || typeof game !== 'object' || isExampleGame(game)) {
+    return null;
+  }
 
   const title = String(game.title || '').trim();
 
@@ -89,9 +69,10 @@ export function normalizeGame(game, index = 0) {
   );
 
   const steamAppId = Number(game.steamAppId);
+  const source = String(game.source || '').toLowerCase();
 
   const isSteamImport =
-    game.source === 'steam' ||
+    source === 'steam' ||
     (Number.isSafeInteger(steamAppId) && steamAppId > 0) ||
     String(game.id || '').startsWith('steam-');
 
@@ -112,7 +93,11 @@ export function normalizeGame(game, index = 0) {
       ? { steamAppId }
       : {}),
 
-    ...(isSteamImport ? { source: 'steam' } : {}),
+    ...(isSteamImport
+      ? { source: 'steam' }
+      : source
+        ? { source }
+        : {}),
 
     ...(imageUrl ? { imageUrl } : {}),
 

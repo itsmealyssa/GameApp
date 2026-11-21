@@ -78,7 +78,6 @@ export default function HomeScreen({
 
   return (
     <View style={[styles.container, { paddingBottom: 8 }]}>
-
       {/* GAMEVAULT HEADER */}
       <View style={styles.headerBrand}>
         <Text style={styles.brandTitle}>GAMEVAULT</Text>
@@ -124,7 +123,7 @@ export default function HomeScreen({
         ))}
       </View>
 
-      {/* COMPACT STATUS AND STORE DROPDOWNS */}
+      {/* STATUS AND STORE DROPDOWNS */}
       <View
         style={{
           flexDirection: 'row',
@@ -279,7 +278,7 @@ export default function HomeScreen({
         {shownGames.length === 0 ? (
           <Text style={styles.emptyText}>
             {games.length === 0
-              ? 'No games yet. Add one to start your collection.'
+              ? 'Your collection is empty. Connect Steam or find games online to get started.'
               : 'No games match your selected filters.'}
           </Text>
         ) : (
@@ -353,41 +352,20 @@ export default function HomeScreen({
         )}
       </View>
 
-      {/* BOTTOM ACTION BUTTONS */}
+      {/* FIND GAMES ONLINE */}
       <View
-        style={[
-          styles.row,
-          {
-            marginTop: 8,
-            marginBottom: 4,
-            gap: 10,
-            flexWrap: 'nowrap',
-          },
-        ]}
+        style={{
+          marginTop: 8,
+          marginBottom: 4,
+        }}
       >
-        <TouchableOpacity
-          accessibilityRole="button"
-          style={[
-            styles.button,
-            {
-              flex: 1,
-              marginTop: 0,
-            },
-          ]}
-          onPress={() => navigation.navigate('AddGame')}
-        >
-          <Text style={styles.buttonText}>
-            + Add Game
-          </Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           accessibilityRole="button"
           style={[
             styles.button,
             styles.secondaryButton,
             {
-              flex: 1,
+              width: '100%',
               marginTop: 0,
             },
           ]}
@@ -398,7 +376,6 @@ export default function HomeScreen({
           </Text>
         </TouchableOpacity>
       </View>
-
     </View>
   );
 }
