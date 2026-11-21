@@ -1,5 +1,6 @@
-
 import React, { useCallback, useEffect, useState } from 'react';
+import { useFonts } from 'expo-font';
+import { PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -22,6 +23,7 @@ import AddGameScreen from './AddGameScreen';
 import DetailsScreen from './DetailsScreen';
 import GameSearchScreen from './GameSearchScreen';
 
+import { initialGames } from './data';
 import { loadGames, saveGames } from './gameStorage';
 import { styles } from './globalStyles';
 
@@ -128,6 +130,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [persistEnabled, setPersistEnabled] = useState(true);
   const [storageError, setStorageError] = useState('');
+  const [fontsLoaded] = useFonts({
+  PressStart2P: PressStart2P_400Regular,
+});
 
   // LOAD SAVED GAMES
   useEffect(() => {
@@ -142,11 +147,11 @@ export default function App() {
       .catch((error) => {
         if (!isActive) return;
 
-        setGames([]);
+        setGames(initialGames);
         setPersistEnabled(false);
 
         setStorageError(
-          `${error.message} Your saved collection could not be loaded. Please check your storage before making changes.`
+          `${error.message} Your sample collection is available for this session.`
         );
       })
       .finally(() => {
@@ -171,34 +176,21 @@ export default function App() {
     });
   }, [games, isLoading, persistEnabled]);
 
-  // ADD RAWG IMPORTS OR UPDATE EXISTING GAMES
+  // ADD OR REPLACE A GAME
   const saveGame = useCallback((game) => {
-    if (!game || !game.id) return;
+    setStorageError('');
+    setPersistEnabled(true);
 
     setGames((currentGames) => {
       const alreadyExists = currentGames.some(
         (item) => item.id === game.id
       );
 
-      // Existing records may be updated.
-      if (alreadyExists) {
-        setStorageError('');
-        setPersistEnabled(true);
-
-        return currentGames.map((item) =>
-          item.id === game.id ? game : item
-        );
-      }
-
-      // New records must come from RAWG.
-      if (game.source !== 'rawg') {
-        return currentGames;
-      }
-
-      setStorageError('');
-      setPersistEnabled(true);
-
-      return [...currentGames, game];
+      return alreadyExists
+        ? currentGames.map((item) =>
+            item.id === game.id ? game : item
+          )
+        : [...currentGames, game];
     });
   }, []);
 
@@ -309,6 +301,10 @@ export default function App() {
     return steamGames.length;
   }, []);
 
+  if (!fontsLoaded) {
+  return null;
+}
+
   return (
     <SafeAreaProvider>
       <StatusBar
@@ -371,10 +367,10 @@ export default function App() {
               )}
             </Stack.Screen>
 
-            {/* RAWG REVIEW / EXISTING GAME EDIT */}
+            {/* ADD GAME */}
             <Stack.Screen
               name="AddGame"
-              options={{ title: 'Game Information' }}
+              options={{ title: 'Add a Game' }}
             >
               {(props) => (
                 <AddGameScreen

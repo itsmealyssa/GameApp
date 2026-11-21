@@ -20,9 +20,51 @@ export default function StatsScreen({ games }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerBrand}>
-        <Text style={styles.brandTitle}>GAMEVAULT</Text>
-        <Text style={styles.brandSubtitle}>
+
+      {/* CENTERED GAMEVAULT HEADER */}
+      <View
+        style={[
+          styles.headerBrand,
+          {
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            marginBottom: 14,
+          },
+        ]}
+      >
+        {/* PIXEL-STYLE LOGO */}
+        <Text
+          style={[
+            styles.brandTitle,
+            {
+              fontFamily: 'PressStart2P',
+              fontSize: 20,
+              color: '#60A5FA',
+              textAlign: 'center',
+              textShadowColor: '#8B5CF6',
+              textShadowOffset: { width: 2, height: 2 },
+              textShadowRadius: 3,
+            },
+          ]}
+        >
+          GAMEVAULT
+        </Text>
+
+        {/* ORIGINAL SUBTITLE */}
+        <Text
+          style={[
+            styles.brandSubtitle,
+            {
+              fontSize: 12,
+              fontWeight: '700',
+              letterSpacing: 1.8,
+              color: '#CBD5E1',
+              textAlign: 'center',
+              marginTop: 6,
+            },
+          ]}
+        >
           COLLECT • PLAY • TRACK • REPEAT
         </Text>
       </View>

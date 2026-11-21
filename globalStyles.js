@@ -159,11 +159,15 @@ export const styles = StyleSheet.create({
   // FILE: globalStyles.js
   // COMPONENT: GameCover.js
   // USED BY: HomeScreen.js, BacklogScreen.js,
-  // StoreLibraryScreen.js, DetailsScreen.js
+  // StoreLibraryScreen.js, DetailsScreen.js,
+  // AddGameScreen.js
   //
-  // EDIT THESE VALUES TO RESIZE GAME COVERS:
-  // cover      = Small game covers
-  // coverLarge = Large cover in DetailsScreen
+  // cover          = Small manual game covers
+  // coverLarge     = Manual game details cover
+  // coverImported  = Steam and RAWG landscape art
+  //
+  // TO RESIZE:
+  // Change width and height under each style.
   // ==========================================
 
   cover: {
@@ -173,11 +177,23 @@ export const styles = StyleSheet.create({
   },
 
   coverLarge: {
-    width: 300,
-    height: 420,
+    width: 150,
+    height: 220,
     borderRadius: 12,
     alignSelf: 'center',
     marginBottom: 8,
+  },
+
+  // Large landscape artwork for imported games.
+  // Maximum width: 520px.
+  // Aspect ratio: 16:9.
+
+  coverImported: {
+    width: '100%',
+    maxWidth: 520,
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    alignSelf: 'center',
   },
 
   coverPlaceholder: {
