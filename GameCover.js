@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { styles } from './globalStyles';
@@ -21,7 +22,7 @@ export default function GameCover({ game, large = false }) {
     return (
       <Image
         accessibilityLabel={`${game.title} cover`}
-        resizeMode={'cover'}
+        resizeMode="contain"
         source={{ uri: game.imageUrl }}
         style={coverStyle}
         onError={() => setImageFailed(true)}
@@ -29,12 +30,16 @@ export default function GameCover({ game, large = false }) {
     );
   }
 
-  const localSource = !imageFailed && game?.imageAsset ? localCovers[game.imageAsset] : null;
+  const localSource =
+    !imageFailed && game?.imageAsset
+      ? localCovers[game.imageAsset]
+      : null;
+
   if (localSource) {
     return (
       <Image
         accessibilityLabel={`${game.title} cover`}
-        resizeMode={'cover'}
+        resizeMode="contain"
         source={localSource}
         style={coverStyle}
         onError={() => setImageFailed(true)}
@@ -43,7 +48,10 @@ export default function GameCover({ game, large = false }) {
   }
 
   return (
-    <View style={[coverStyle, styles.coverPlaceholder]} accessibilityLabel={'No cover image'}>
+    <View
+      style={[coverStyle, styles.coverPlaceholder]}
+      accessibilityLabel="No cover image"
+    >
       <Text style={{ fontSize: large ? 48 : 20 }}>🎮</Text>
     </View>
   );

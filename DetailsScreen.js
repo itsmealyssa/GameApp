@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
 } from 'react-native';
 
 import { styles } from './globalStyles';
@@ -27,7 +28,6 @@ export default function DetailsScreen({
   onRemoveGame,
 }) {
   const { gameId } = route.params;
-
   const game = games.find((item) => item.id === gameId);
 
   if (!game) {
@@ -39,10 +39,8 @@ export default function DetailsScreen({
   }
 
   const ratingNumbers = [1, 2, 3, 4, 5];
-
   const storeName = getStoreName(game.storeId);
 
-  // Identify Steam-imported games, including older imports.
   const isSteamImport =
     game.source === 'steam' ||
     Number(game.steamAppId) > 0 ||
@@ -50,17 +48,14 @@ export default function DetailsScreen({
 
   const changeStore = (storeId) => {
     if (isSteamImport) return;
-
     onUpdateGame(gameId, { storeId });
   };
 
   const changeStatus = (status) => {
     if (isSteamImport) return;
-
     onUpdateGame(gameId, { status });
   };
 
-  // REMOVE GAME FROM COLLECTION
   const removeGame = () => {
     const confirmRemoval = () => {
       if (typeof onRemoveGame !== 'function') {
@@ -80,10 +75,7 @@ export default function DetailsScreen({
         `Are you sure you want to remove "${game.title}" from your collection?`
       );
 
-      if (confirmed) {
-        confirmRemoval();
-      }
-
+      if (confirmed) confirmRemoval();
       return;
     }
 
@@ -105,10 +97,32 @@ export default function DetailsScreen({
   };
 
   return (
-    <View style={styles.container}>
-      <GameCover game={game} large />
+    <ScrollView
+      style={{
+        flex: 1,
+        backgroundColor: '#060a11',
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 30,
+      }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* GAME COVER */}
+      <View
+        style={{
+          alignItems: 'center',
+          marginBottom: 8,
+        }}
+      >
+        <GameCover game={game} large />
+      </View>
 
-      <Text style={styles.title}>{game.title}</Text>
+      {/* GAME INFORMATION */}
+      <Text style={styles.title}>
+        {game.title}
+      </Text>
 
       <Text style={styles.subText}>
         Platform: {game.platform}
@@ -135,7 +149,7 @@ export default function DetailsScreen({
         </Text>
       )}
 
-      {/* CURRENT STORY STATUS */}
+      {/* CURRENT STATUS */}
       <View
         style={[
           styles.badge,
@@ -151,7 +165,7 @@ export default function DetailsScreen({
         </Text>
       </View>
 
-      {/* CHANGE GAME STORE - MANUALLY ADDED GAMES ONLY */}
+      {/* CHANGE STORE */}
       {!isSteamImport && (
         <>
           <Text style={styles.label}>Change Store</Text>
@@ -243,7 +257,7 @@ export default function DetailsScreen({
           : `You rated this ${game.rating}/5`}
       </Text>
 
-      {/* STORY STATUS - MANUALLY ADDED GAMES ONLY */}
+      {/* STORY STATUS */}
       {!isSteamImport && (
         <>
           <Text style={styles.label}>Story Status</Text>
@@ -279,7 +293,7 @@ export default function DetailsScreen({
         </>
       )}
 
-      {/* EDIT GAME - MANUALLY ADDED GAMES ONLY */}
+      {/* EDIT GAME */}
       {!isSteamImport && (
         <TouchableOpacity
           accessibilityRole="button"
@@ -305,6 +319,6 @@ export default function DetailsScreen({
           Remove from Collection
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
