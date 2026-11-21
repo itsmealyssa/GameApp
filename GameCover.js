@@ -12,12 +12,30 @@ const localCovers = {
 
 export default function GameCover({ game, large = false }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const coverStyle = large ? styles.coverLarge : styles.cover;
 
   useEffect(() => {
     setImageFailed(false);
   }, [game?.id, game?.imageUrl, game?.imageAsset]);
 
+  // Normalize source to handle RAWG, rawg, Steam, etc.
+  const source = String(game?.source || '').toLowerCase();
+  const gameId = String(game?.id || '').toLowerCase();
+
+  const isImported =
+    source === 'steam' ||
+    source === 'rawg' ||
+    Number(game?.steamAppId) > 0 ||
+    gameId.startsWith('steam-') ||
+    gameId.startsWith('rawg-');
+
+  // Preserve existing image dimensions.
+  const coverStyle = isImported && large
+    ? styles.coverImported
+    : large
+      ? styles.coverLarge
+      : styles.cover;
+
+  // Online image
   if (game?.imageUrl && !imageFailed) {
     return (
       <Image
@@ -30,6 +48,7 @@ export default function GameCover({ game, large = false }) {
     );
   }
 
+  // Local image
   const localSource =
     !imageFailed && game?.imageAsset
       ? localCovers[game.imageAsset]
@@ -47,12 +66,15 @@ export default function GameCover({ game, large = false }) {
     );
   }
 
+  // Placeholder
   return (
     <View
       style={[coverStyle, styles.coverPlaceholder]}
       accessibilityLabel="No cover image"
     >
-      <Text style={{ fontSize: large ? 48 : 20 }}>🎮</Text>
+      <Text style={{ fontSize: isImported ? 64 : large ? 48 : 20 }}>
+        🎮
+      </Text>
     </View>
   );
 }
