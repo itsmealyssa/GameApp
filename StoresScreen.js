@@ -209,7 +209,7 @@ export default function StoresScreen({
         </Text>
       </View>
 
-      <Text style={styles.title}>Game Stores</Text>
+      <Text style={[styles.title, { fontSize: 18 }]}>Game Stores</Text>
 
       <Text style={styles.subText}>
         Manage your Steam game library.

@@ -67,7 +67,7 @@ export default function BacklogScreen({ navigation, games }) {
         </Text>
       </View>
 
-      <Text style={styles.title}>Backlog</Text>
+      <Text style={[styles.title, { fontSize: 18 }]}>Backlog</Text>
 
       <Text style={styles.subText}>
         {backlogGames.length} games waiting to be played

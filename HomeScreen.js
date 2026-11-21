@@ -128,7 +128,7 @@ export default function HomeScreen({
       </View>
 
       {/* COLLECTION TITLE */}
-      <Text style={styles.title}>My Games</Text>
+      <Text style={[styles.title, { fontSize: 18 }]}>My Games</Text>
 
       <Text style={styles.subText}>
         {stats.total} owned · {stats.completed} completed · {stats.totalHours} hours

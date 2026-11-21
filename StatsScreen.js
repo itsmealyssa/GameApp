@@ -69,7 +69,7 @@ export default function StatsScreen({ games }) {
         </Text>
       </View>
 
-      <Text style={styles.title}>Statistics</Text>
+     <Text style={[styles.title, { fontSize: 18 }]}>Statistics</Text>
 
       <Text style={styles.subText}>
         Your gaming journey, calculated from your collection.
